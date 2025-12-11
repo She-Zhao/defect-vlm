@@ -1,0 +1,49 @@
+{
+  "info": {
+  "description": "Mixed Industrial Defect Dataset (NEU-DET + Paint + PCB)",
+  "num_of_train_images": 1000,
+  "num_of_val_images": 200,
+  "num_of_defects": {
+    "scratch": 300,
+    "inclusion": 200
+    }
+  },
+  "categories": [
+    {"id": 1, "name": "scratch"},
+    {"id": 2, "name": "inclusion"}
+  ],
+  "images": [
+    {
+      "id": 1,  // 建议 ID 重排：例如 NEU 从 1-1000，Paint 从 2000-3000
+      "file_name": "neu_det/001.jpg",
+      "width": 200,
+      "height": 200,
+      "dataset_source": "neu_det"  // 方便做实验分析
+    },
+    {
+      "id": 2001,
+      "file_name": "my_paint/img_5.jpg",
+      "width": 1024,
+      "height": 1024,
+      "dataset_source": "paint_v1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": 1,
+      "image_id": 1,
+      "category_id": 1,
+      "bbox": [10, 10, 50, 50],
+      "area": 2500,
+      "iscrowd": 0
+    },
+    {
+      "id": 500,
+      "image_id": 2001,
+      "category_id": 2,
+      "bbox": [100, 100, 30, 30],
+      "area": 900,
+      "iscrowd": 0
+    }
+  ]
+}
