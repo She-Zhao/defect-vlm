@@ -1,11 +1,11 @@
 {
   "info": {
   "description": "Mixed Industrial Defect Dataset (NEU-DET + Paint + PCB)",
-  "num_of_train_images": 1000,
-  "num_of_val_images": 200,
+  "total_images": 0,
+  "total_defects": 0,
   "num_of_defects": {
-    "scratch": 300,
-    "inclusion": 200
+    "scratch": 0,
+    "inclusion": 0
     }
   },
   "categories": [

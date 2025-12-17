@@ -1,9 +1,12 @@
 [project]
-name = "defect-llm"
+name = "defect-vlm"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "opencv-python>=4.12.0.88",
+    "pillow>=12.0.0",
     "requests>=2.32.5",
+    "tqdm>=4.67.1",
 ]
