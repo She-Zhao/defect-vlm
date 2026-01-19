@@ -160,8 +160,8 @@ def xml2coco(
     print("✅ 转换完成！")
 
 if __name__ == "__main__":
-    xml_dir = r'D:\Project\Defect_Dataset\FXP\labels'
-    save_path = 'data/FXP.json'
+    xml_dir = r'D:\Project\Defect_Dataset\al_primary\labels'
+    save_path = 'data/al_primary.json'
 
     # ⚠️【重要】请在这里定义你的类别映射
     # XML 中的 <name> 必须与这里的 "name" 一致，否则会被跳过

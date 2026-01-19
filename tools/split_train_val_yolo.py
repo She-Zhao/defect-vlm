@@ -1,5 +1,5 @@
 """
-将coco格式的数据集划分为训练集和测试集
+将yolo格式的数据集划分为训练集和测试集
 """
 import os
 import random
