@@ -1,29 +1,23 @@
 from pathlib import Path
 import shutil
 import json
+from tqdm import tqdm
+import PIL
 
-# root_dir = Path(r'D:\Project\Defect_Dataset\AL\决赛_train_1011\单瑕疵图片')
-# dst_dir = Path(r'D:\Project\Defect_Dataset\AL\决赛_train_1011\single_all_images')
+# save_dir = Path(r'D:\Project\Defect_Dataset\al_final\new_labels')
+# labels_dir = Path(r'D:\Project\Defect_Dataset\al_final\labels')
+# labels = list(labels_dir.glob('*.json'))
 
-# defect_dirs = [f for f in root_dir.iterdir() if f.is_dir()]
+# save_dir.mkdir(exist_ok=True, parents=True)
 
-# for defect_dir in defect_dirs:
-#     json_files = [f for f in defect_dir.glob('*.jpg')]
-#     for json_file in json_files:
-#         dst_path = dst_dir / json_file.name
-        
-#         shutil.copy2(json_file, dst_path)
-#         print(f'Copied: {json_file.name}')
-all_defects  = 0
-data_dir = Path('data')
-files = [f for f in data_dir.glob('*.json')]
-for file in files:
-    try:
-        with open(file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    except Exception as e:
-        print(f"处理 {file} 时遇到错误 {e}")
-    all_defects += data['info']['total_defects']
-
-print(all_defects)
+# for label in tqdm(labels, desc='Processing'):
+#     try:
+#         with open(label, 'r', encoding='utf-8') as f:
+#             data = json.load(f)    
+#         data.pop('imageData', None)
+#         save_path = save_dir / label.name
+#         with open(save_path, 'w', encoding='utf-8') as f: 
+#             json.dump(data, f, indent=2, ensure_ascii=False)
+#     except Exception as e:
+#         print(f"处理 {label} 时发生错误: {e}")
 
