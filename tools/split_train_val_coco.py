@@ -6,6 +6,7 @@ import random
 import re
 import copy
 from collections import Counter
+from pathlib import Path
 random.seed(42)
 
 def get_defect_counts(anns, cat_map):
@@ -102,9 +103,16 @@ def split_train_val_coco(file_path, train_path, val_path, ratio = 0.2):
         f.write(val_str)   
 
 if __name__ == "__main__":
-    file_path = 'data/paint_stripe.json'
-    train_path = 'data/paint_stripe_train.json'
-    val_path = 'data/paint_stripe_val.json'
+    file_name = 'paint_stripe.json'
+    stem = Path(file_name).stem
+    root_dir = Path('data')
+    file_path = root_dir / 'raw_label' /file_name
+    train_path = root_dir / 'train_label' / f"{stem}_train.json"
+    val_path = root_dir / 'val_label' / f"{stem}_val.json"
+    print(file_path)
+    print(train_path)
+    print(val_path)
+    
     split_train_val_coco(
         file_path=file_path,
         train_path=train_path,

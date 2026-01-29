@@ -33,8 +33,21 @@ VLM-Defect-Inspection/        <-- Git 仓库根目录 (Root)
 ```
 
 ### 数据集
+defect_datasets_raw/        <-- 原始数据集图像
+├──  
+├── 
+├── 
+├── 
+├── paint_stripe/           <-- 条纹光漆面数据集
+│   ├── images                  # 一次性脚本
+│   ├── labels_yolo
+│   
 
-
+defect_datasets_vlm/        <-- 用于微调VLM的数据集，只存储了region proposal
+├── paint_stripe_gt_positive/           <-- 从标注的数据集里构造的正样本
+├── paint_stripe_gt_negative/           <-- 从标注的数据集里构造的负样本
+│  
+│   
 
 ### TODO
 - [ ]
