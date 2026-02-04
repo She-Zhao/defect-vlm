@@ -103,9 +103,10 @@ def split_train_val_coco(file_path, train_path, val_path, ratio = 0.2):
         f.write(val_str)   
 
 if __name__ == "__main__":
-    file_name = 'paint_stripe.json'
+    file_name = 'paint_ap.json'     # 修改这里即可
+    
     stem = Path(file_name).stem
-    root_dir = Path('data')
+    root_dir = Path('label')
     file_path = root_dir / 'raw_label' /file_name
     train_path = root_dir / 'train_label' / f"{stem}_train.json"
     val_path = root_dir / 'val_label' / f"{stem}_val.json"

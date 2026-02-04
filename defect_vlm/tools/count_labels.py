@@ -11,7 +11,6 @@ defects_map = {
     '7': 'condensate'
 }
 
-
 def analyse_labels(labels_dir):
     defects_count = {}
     for file_name in os.listdir(labels_dir):
