@@ -37,11 +37,18 @@ def concat_image(image_dir: str, phase_names: list[str], save_dir: str) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--image_dir', type=str, default='/data/ZS/defect_dataset/0_defect_dataset_raw/paint_stripe/images',
+        '--image_dir', type=str, default='/data/ZS/defect_dataset/0_defect_dataset_raw/paint_ap/images',
         help = '原始图像所在的根目录'
     )
-    parser.add_argument('--phase_names', type=str, nargs='+', help='三个通道相位图的名称')
-    parser.add_argument('--save_dir', type=str, help='拼接后的图像所在的文件夹')                      
+    
+    parser.add_argument('--phase_names', default=['sin1', 'sin2', 'sin3'],
+        type=str, nargs='+', help='三个通道相位图的名称'
+    )
+    
+    parser.add_argument('--save_dir', default='/data/ZS/defect_dataset/1_paint_rgb/ap_phase123/images',
+        type=str, help='拼接后的图像所在的文件夹'
+    )
+                     
     args = parser.parse_args()
     
     concat_image(args.image_dir, args.phase_names, args.save_dir)

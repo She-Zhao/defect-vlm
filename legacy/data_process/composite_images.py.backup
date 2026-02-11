@@ -1,0 +1,133 @@
+"""
+合成图像，同一缺陷在四种光源下的2*2全局图像+2*2局部图像
+"""
+import os
+from pathlib import Path
+from collections import defaultdict
+from tqdm import tqdm
+import numpy as np
+import cv2 as cv
+
+def draw_bbox_on_image(image: np.ndarray, bbox: Union[list, tuple], expand=2) -> np.ndarray:
+    """
+    输入原图像，在图像上绘制bbox的红框
+    
+    Args:
+        image: 输入的图像
+        bbox: bbox的坐标(x, y, w, h)
+        expand: bbox的扩充坐标
+    """
+    h, w = image.shape[:2]
+    x, y, w, h = bbox
+    
+    x_min = max(0, int(x - expand))
+    y_min = max(0, int(y - expand))
+    x_max = min(w, int(x + w + expand))
+    y_max = min(h, int(y + h + expand))
+
+    pt1 = (x_min, y_min)
+    pt2 = (x_max, y_max)
+    
+    raw_image = image.copy()
+    image_with_bbox = cv2.rectangle(raw_image, pt1, pt2, color=(0, 0, 255), thickness=2, lineType=8)
+
+    return image_with_bbox
+
+def letter_resize_bbox(image: np.ndarray, target_size=300) -> np.ndarray:
+    """
+    输入bbox图像，将bbox图像缩放到指定大小，并填充黑色
+    
+    Args:
+        image: 输入的图像
+        target_size: bbox的目标大小
+    """
+    h, w = image.shape[:2]
+    scale = min(target_size / h, target_size / w)
+    
+    new_h = int(scale * h)
+    new_w = int(scale * w)
+    
+    resize_image = cv.resize(image, (new_h, new_w), interpolation=cv2.INTER_CUBIC)
+    
+    canvas = np.zeros((target_size, target_size, 3), dtype=np.uint8)
+    x_min = (target_size - new_w) // 2
+    y_min = (target_size - new_h) // 2
+    
+    x_max = x_min + new_w
+    y_max = y_min + new_h
+    
+    canvas[y_min:y_max, x_min:x_max] = resize_image
+    
+    return canvas
+    
+
+def composite_2x2_images(images: list[np.ndarray], target_size=600) -> np.ndarray:
+    """
+    Args:
+        images(list[np.ndarray]): 待拼接的图像 
+    """
+    cell_size = target_size // 2
+    composite_images = []
+    for image in images:
+        if image.shape != (cell_size, cell_size, 3):
+            image = letter_resize_bbox(image, target_size=cell_size)
+        composite_images.append(image)
+    
+    canvas = np.zeros((target_size, target_size, 3), dtype=np.uint8)
+    
+    canvas[:cell_size, :cell_size] = composite_images[0]
+    canvas[:cell_size, cell_size:] = composite_images[1]
+    canvas[cell_size:, :cell_size] = composite_images[2]
+    canvas[cell_size:, cell_size:] = composite_images[3]
+
+    return canvas
+    
+
+def main(json_path: str) -> None:
+    """
+    Args:
+        json_path(str): 数据集路径 
+    """
+    with open(json_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    bbox2item = defaultdict(list)
+    for item in data:
+        try:
+            bbox = tuple(item['bbox'])
+            bbox2item[bbox].append(item)
+        except Exception as e:
+            print(f'处理项目id为 {item[id]} 的项目时出错： {e}')
+            continue
+    
+    for bbox, items in tqdm(bbox2item, desc = 'Processing'):
+        if len(items) != 4:
+            print(f"bbox为 {bbox} 的光源数量为 {len(items)} !")
+            continue
+        
+        try:
+            # 获取原始图像和截取bbox图像的路径
+            original_image_paths = [items['original_image_path'] for items in items]
+            crop_image_path = [items['crop_image_path'] for items in items]
+            label, light_source = items[0]['label'], items[0]['light_source']
+            
+            # 读取图像
+            original_images = [cv.imread(original_image_path) for original_image_path in original_image_paths]
+            crop_images = [cv.imread(crop_image_path) for crop_image_path in crop_image_paths]
+            
+            # 在原始图像上画框，缩放bbox
+            original_images_with_bbox = [draw_bbox_on_image(image, bbox) for image in original_images]
+            resize_crop_images = [letter_resize_bbox(crop_image) for crop_image in crop_images]
+            
+            # 拼接图像
+            composite_2x2_image = composite_2x2_images(original_images_with_bbox)
+            composite_2x2_bbox = composite_2x2_images(resize_crop_images)
+        
+        except Exception as e:
+            print()
+            continue
+        
+
+if __name__ == "__main__":
+    json_path = ""
+    main(json_path)
