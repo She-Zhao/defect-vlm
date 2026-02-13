@@ -1,4 +1,4 @@
-<image> <image>
+<image>\n<image>
 Prior Hint: {}
 
 # Role & Imaging Principle

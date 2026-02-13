@@ -1,7 +1,7 @@
 """
 将图像转换为调用LLM API的格式
 
-输入包含图像的文件夹和提示词（建议从pe.json文件中提取），自动构造json格式数据.
+输入包含前一步获取的json文件和prompt编号，自动构造并保存调用api的jsonl文件
 
 author:zhaoshe
 """

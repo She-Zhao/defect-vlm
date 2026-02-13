@@ -1,3 +1,6 @@
+"""
+用于查看jsonl的脚本，从jsonl里面随机抽取三条并打印出来
+"""
 import json
 from pathlib import Path
 import random
