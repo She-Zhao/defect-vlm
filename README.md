@@ -58,12 +58,50 @@ defect_datasets_vlm/        <-- 用于微调VLM的数据集，只存储了region
 │   
 ```
 
+### 数据预处理流程
+1. 将原始数据集中的图像和标注转换为 COCO 格式
+```
+defect-vlm/defect_vlm/data_preprocess/label_converter
+```
+
+2. 将数据集划分为训练集和验证集
+```
+defect-vlm/defect_vlm/data_preprocess/split_train_val_coco.py
+```
+
+3. 将单通道灰度图拼接为三通道伪BGR图像
+```
+defect-vlm/defect_vlm/data_preprocess/concat_image.py
+```
+
+4. 从标注的缺陷框中提取正样本
+```
+defect-vlm/defect_vlm/data_preprocess/get_positive_bbox_from_gt.py
+```
+
+5. 从标注的缺陷框中提取两类负样本
+```
+defect-vlm/defect_vlm/data_preprocess/get_negative_bbox_from_gt.py
+
+defect-vlm/defect_vlm/data_preprocess/get_rectification_bbox_from_gt.py
+```
+
+6. 拼接获得2*2全局图像和2*2的局部图像
+```
+defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
+```
+
+### 提示词工程流程
+
 ### TODO 已完成
 - [x] 数据预处理脚本
     - [x] 将不同格式的标注转换为 COCO 格式的脚本
     - [x] 将数据集划分为训练集和验证集的脚本
     - [x] 将单通道灰度图拼接为三通道伪BGR图像的脚本
     - [x] 从标注的缺陷框中提取正样本的脚本
-    - [ ] 从标注的缺陷框中提取负样本的脚本
+    - [x] 从标注的缺陷框中提取两类负样本的脚本
+- [x] 提示词工程脚本
+    - [x] 撰写多图推理的提示词
+    - [x] 将多图推理的提示词和数据集构成调用API的SFT格式数据集
 
 
