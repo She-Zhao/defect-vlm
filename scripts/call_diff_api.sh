@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# --- 配置区域 ---
+# 建议使用绝对路径，避免找不到文件
+PROJECT_ROOT="/data/ZS/defect-vlm"
+SCRIPT_PATH="$PROJECT_ROOT/defect_vlm/pe/call_api.py"
+INPUT_FILE="/data/ZS/defect_dataset/4_api_request/test/012_pos200_neg150_rect150.jsonl"
+OUTPUT_DIR="/data/ZS/defect_dataset/5_api_response/test"
+
+# 确保输出目录存在
+mkdir -p "$OUTPUT_DIR"
+
+# 激活环境 (根据你的实际情况修改，如果是 conda)
+# source /root/miniconda3/etc/profile.d/conda.sh
+# conda activate defect-vlm
+
+echo "========================================"
+echo "🚀 开始批量打标任务"
+echo "📅 开始时间: $(date)"
+echo "📂 输入文件: $INPUT_FILE"
+echo "========================================"
+
+# --- 任务列表 ---
+
+# 1. Qwen3-VL-Plus
+echo "👉 Running Qwen3-VL-Plus..."
+python "$SCRIPT_PATH" \
+    --provider qwen \
+    --model qwen3-vl-plus \
+    --input_file "$INPUT_FILE" \
+    --output_file "$OUTPUT_DIR/qwen3-vl-plus.jsonl" \
+    --concurrency 3
+
+# 2. Qwen3-VL-Instruct
+echo "👉 Running Qwen3-VL-Instruct..."
+python "$SCRIPT_PATH" \
+    --provider qwen \
+    --model qwen3-vl-235b-a22b-instruct \
+    --input_file "$INPUT_FILE" \
+    --output_file "$OUTPUT_DIR/qwen3-vl-235b-a22b-instruct.jsonl" \
+    --concurrency 3
+
+# 3. Qwen3-VL-Thinking
+echo "👉 Running Qwen3-VL-Thinking..."
+python "$SCRIPT_PATH" \
+    --provider qwen \
+    --model qwen3-vl-235b-a22b-thinking \
+    --input_file "$INPUT_FILE" \
+    --output_file "$OUTPUT_DIR/qwen3-vl-235b-a22b-thinking.jsonl" \
+    --concurrency 3
+
+# 4. Gemini-3-Pro
+echo "👉 Running Gemini-3-Pro..."
+python "$SCRIPT_PATH" \
+    --provider google \
+    --model gemini-3-pro-preview \
+    --input_file "$INPUT_FILE" \
+    --output_file "$OUTPUT_DIR/gemini-3-pro-preview.jsonl" \
+    --concurrency 3
+
+# 5. GPT-5.2
+echo "👉 Running GPT-5.2..."
+python "$SCRIPT_PATH" \
+    --provider openai \
+    --model gpt-5.2 \
+    --input_file "$INPUT_FILE" \
+    --output_file "$OUTPUT_DIR/gpt-5.2.jsonl" \
+    --concurrency 3
+
+# 6. GPT-5.1
+echo "👉 Running GPT-5.1..."
+python "$SCRIPT_PATH" \
+    --provider openai \
+    --model gpt-5.1 \
+    --input_file "$INPUT_FILE" \
+    --output_file "$OUTPUT_DIR/gpt-5.1.jsonl" \
+    --concurrency 5
+
+echo "========================================"
+echo "✅ 所有任务已完成"
+echo "📅 结束时间: $(date)"
+echo "========================================"

@@ -13,7 +13,7 @@ from tqdm import tqdm
 import argparse
 from typing import List, Dict, Any
 from openai import AsyncOpenAI, APIError
-from utils import APIConfigManager  
+from defect_vlm.utils import APIConfigManager  
 
 # 如果采用openai等外网官方网站作为base_url，需要设置下代理的映射端口
 # os.environ['HTTP_PROXY'] = 'http://127.0.0.1:xxxx'
@@ -240,34 +240,34 @@ def main():
     parser.add_argument('--model', type=str, required=True, help='模型名称')
     parser.add_argument('--input_file', type=str, required=True, help='输入的 .jsonl 待处理文件')
     parser.add_argument('--output_file', type=str, required=True, help='输出的处理结果文件')
-    parser.add_argument('--concurrency', type=int, default=10, help='并发调用数量, 默认为10')
+    parser.add_argument('--concurrency', type=int, default=2, help='并发调用数量, 默认为10')
 
     args = parser.parse_args()
     asyncio.run(process_batch_task(args))
 
 if __name__ == "__main__":
-    # 通过命令行运行(不建议)
-    # main()
+    # 通过命令行运行
+    main()
     
     # 通过代码运行
-    test_args = argparse.Namespace()
+    # test_args = argparse.Namespace()
 
-    # 修改下面这部分参数即可
-    test_args.provider = 'qwen'                                         # 提供商
-    test_args.model = 'qwen3-vl-plus'                                   # 模型名称
-    test_args.input_file = '/data/ZS/defect_dataset/4_api_request/val/stripe_phase012_gt_positive.jsonl'            # 输入文件
-    test_args.output_file = '/data/ZS/defect_dataset/5_api_response/val/stripe_phase012_gt_positive.jsonl'    # 调用api后得到的输出文件
-    test_args.concurrency = 2                                          # 并发数
+    # # 修改下面这部分参数即可
+    # test_args.provider = 'qwen'                                         # 提供商
+    # test_args.model = 'qwen3-vl-plus'                                   # 模型名称
+    # test_args.input_file = '/data/ZS/defect_dataset/4_api_request/val/stripe_phase012_gt_positive.jsonl'            # 输入文件
+    # test_args.output_file = '/data/ZS/defect_dataset/5_api_response/val/stripe_phase012_gt_positive.jsonl'    # 调用api后得到的输出文件
+    # test_args.concurrency = 2                                          # 并发数
     
-    print(f"--- 正在从脚本中启动 call_llm_api_robust (调试模式) ---")
-    print(f"   Provider: {test_args.provider}")
-    print(f"   Model: {test_args.model}")
-    print(f"   Input: {test_args.input_file}")
-    print(f"   Output: {test_args.output_file}")
-    print(f"   Concurrency: {test_args.concurrency}")
+    # print(f"--- 正在从脚本中启动 call_llm_api_robust (调试模式) ---")
+    # print(f"   Provider: {test_args.provider}")
+    # print(f"   Model: {test_args.model}")
+    # print(f"   Input: {test_args.input_file}")
+    # print(f"   Output: {test_args.output_file}")
+    # print(f"   Concurrency: {test_args.concurrency}")
     
-    try:
-        asyncio.run(process_batch_task(test_args))
-        print(f"--- 脚本调用执行完毕 ---")
-    except Exception as e:
-        print(f"--- 脚本调用时发生错误: {e} ---")
+    # try:
+    #     asyncio.run(process_batch_task(test_args))
+    #     print(f"--- 脚本调用执行完毕 ---")
+    # except Exception as e:
+    #     print(f"--- 脚本调用时发生错误: {e} ---")
