@@ -256,8 +256,8 @@ if __name__ == "__main__":
     test_args.provider = 'qwen'                                         # 提供商
     test_args.model = 'qwen3-vl-plus'                                   # 模型名称
     test_args.input_file = '/data/ZS/defect_dataset/4_api_request/val/stripe_phase012_gt_positive.jsonl'            # 输入文件
-    test_args.output_file = '/data/ZS/defect_dataset/5_api_result/val/stripe_phase012_gt_positive.jsonl'    # 调用api后得到的输出文件
-    test_args.concurrency = 10                                          # 并发数
+    test_args.output_file = '/data/ZS/defect_dataset/5_api_response/val/stripe_phase012_gt_positive.jsonl'    # 调用api后得到的输出文件
+    test_args.concurrency = 2                                          # 并发数
     
     print(f"--- 正在从脚本中启动 call_llm_api_robust (调试模式) ---")
     print(f"   Provider: {test_args.provider}")

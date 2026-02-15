@@ -1,5 +1,8 @@
 import os
 import yaml
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class APIConfigManager:
     """
@@ -54,8 +57,8 @@ if __name__ == "__main__":
     all_providers = apiconfigmanager.list_providers()
     print(f"所有的供应商: {all_providers}")
     
-    provider = "deepseek"
+    provider = "qwen"
     print(apiconfigmanager.list_models(provider))
     
-    model = "deepseek-chat"
+    model = "qwen3-vl-plus"
     print(apiconfigmanager.get_model_config(provider, model))

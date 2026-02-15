@@ -10,7 +10,9 @@ providers:
     api_key_env: "UNIFIED_API_KEY"
     base_url: "https://api.agicto.cn/v1"
     models: 
-      "qwen3-vl-plus": "混合推理模型, MLLM, 商业版(未开源)"
+      "qwen3-vl-plus": "闭源混合推理模型, 百万token价格: in:1 out:10"
+      "qwen3-vl-235b-a22b-instruct": "非思考模型, MLLM, 百万token价格: in:2 out:8"
+      "qwen3-vl-235b-a22b-thinking": "思考模型, MLLM, 百万token价格: in:2 out:20"
 
   openai:
     api_key_env: "UNIFIED_API_KEY"
@@ -18,11 +20,9 @@ providers:
     # api_key_env: "OPENAI_API_KEY"
     # base_url: "https://api.openai.com/v1"
     models:
-      "gpt-5": "混合推理模型,MLLM,不会输出思维链具体内容"
-      "gpt-5-chat-latest": "混合推理模型,MLLM,不会输出思维链具体内容"
-      "gpt-4.1": "非推理模型,MLLM"
-      "o3": "推理模型,MLLM,不会输出思维链具体内容"
-      "o4-mini": "推理模型,MLLM,不会输出思维链具体内容"
+      "gpt-5.2": "混合推理模型, MLLM, 不会输出思维链具体内容。百万token价格: in:12.25 out:98"
+      "gpt-5.1": "混合推理模型, MLLM, 不会输出思维链具体内容。百万token价格: in:8.75 out:70"
+      "gpt-5": "混合推理模型, MLLM, 百万token价格: in:8.75 out:70"
 
   google:
     api_key_env: "UNIFIED_API_KEY"
@@ -30,5 +30,5 @@ providers:
     # api_key_env: "GEMINI_API_KEY"
     # base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
     models:
-      "gemini-2.5-pro": "推理模型, MLLM, Gemini旗舰模型"
-      "gemini-2.5-flash": "混合推理模型, MLLM, 能力弱于pro"    
+      "gemini-3-pro-preview": "多模态理解模型, 百万token价格: in:14 out:84"
+      "gemini-3-flash-preview": "多模态理解模型, 百万token价格: in:3.5 out:21" 
