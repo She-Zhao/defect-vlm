@@ -17,35 +17,53 @@ def check_ai_response(item: dict) -> bool:
     
     # 检查是否为 API 调用失败
     if ai_response_str.startswith("ERROR"):
+        if 'meta_info' not in item: item['meta_info'] = {}
         item['meta_info']['fail_reason'] = f"API调用阶段报错: {ai_response_str}"
         return False
-         
+        
+    # 提取纯 JSON
+    # 寻找第一个左大括号和最后一个右大括号的位置
+    start_idx = ai_response_str.find('{')
+    end_idx = ai_response_str.rfind('}')
+    
+    # 确保同时找到了 { 和 }，并且 { 在 } 的前面
+    if start_idx != -1 and end_idx != -1 and start_idx <= end_idx:
+        ai_response_str = ai_response_str[start_idx:end_idx+1]
+    else:
+        if 'meta_info' not in item: item['meta_info'] = {}
+        item['meta_info']['fail_reason'] = "模型回复中未找到有效的JSON大括号结构"
+        return False
+
     try:
-        # 1. 宽容解析：允许真实换行符
+        # 1. 允许真实换行符
         ai_response = json.loads(ai_response_str, strict=False)
         
-        # 2. 【关键修复】洗白重塑：将解析出的字典重新转为标准严格的 JSON 字符串
-        # indent=4 可以让微调数据保持良好的可读性，且 json.dumps 内部会自动把换行转义为 \n
+        # 2. 将解析出的字典重新转为标准严格的 JSON 字符串
         clean_response_str = json.dumps(ai_response, ensure_ascii=False, indent=4)
         
         # 3. 覆盖原始脏数据
         item['conversation'][1]['value'] = clean_response_str
         
     except json.JSONDecodeError as e:
-        item['meta_info']['fail_reason'] = f"JSON解析失败，非标准JSON格式"
+        if 'meta_info' not in item: item['meta_info'] = {}
+        item['meta_info']['fail_reason'] = "JSON解析失败，非标准JSON格式"
         return False
 
     # 检查回复的key是否正确
     ai_response_keys = set(ai_response.keys())
     if ai_response_keys != REQUIRED_KEYS:
+        if 'meta_info' not in item: item['meta_info'] = {}
         item['meta_info']['fail_reason'] = f"模型的回复缺少必须字段, 当前为 {ai_response_keys}"
         return False
     
+    # 检查缺陷类别是否在允许的列表中
     ai_response_defect = ai_response.get('defect', '').lower()
     if ai_response_defect not in REQUIRED_DEFECTS:
+        if 'meta_info' not in item: item['meta_info'] = {}
         item['meta_info']['fail_reason'] = f"模型回复的缺陷类型不符合要求, 当前为 {ai_response_defect}"
         return False
     
+    # 走到这里说明一切完美
     return True
     
 def main(api_response_path: str, save_path: str, retry_path: str) -> None:
@@ -86,8 +104,8 @@ def main(api_response_path: str, save_path: str, retry_path: str) -> None:
         
 if __name__ == "__main__":
     main(
-        api_response_path = "/data/ZS/defect_dataset/5_api_response/test/qwen3-vl-plus.jsonl",
-        save_path = "/data/ZS/defect_dataset/6_sft_dataset/test/qwen3-vl-plus.jsonl" ,
-        retry_path = "/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-plus.jsonl"
+        api_response_path = "/data/ZS/defect_dataset/5_api_response/retry/qwen3-vl-235b-a22b-instruct.jsonl",
+        save_path = "/data/ZS/defect_dataset/6_sft_dataset/test/qwen3-vl-235b-a22b-instruct.jsonl" ,
+        retry_path = "/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-235b-a22b-instruct.jsonl"
     )
  

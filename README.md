@@ -115,8 +115,11 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
     - [x] 查看打标结果，看下错误的数量及原因。(原因：缺陷名称有的是Bulge，有的是bulge；回复的json字符串里面有的有转义字符，可以通过json.loads(strict=False)来解决该问题)
     - [x] 分析下重复打标的原因，将/data/ZS/defect_dataset/5_api_response/test里面打标的id进行矫正，并看是否和/data/ZS/defect_dataset/4_api_request/test有所重复。（012_pos200_neg150_rect150和012_pos400_neg300_rect300里面不是完全重复的，因为前者用的是random.shuffle，后者用的是random.sample）
     - [x] 撰写可视化脚本，根据打标得到的结果，对打标结果和对应图像进行可视化
-    - [ ] 编写评估脚本，对打标结果进行评估，绘制混淆矩阵，计算准确率、召回率、F1分数等指标
-    - [ ] 测试不同模型效果（教师模型和学生模型）
+    - [x] 编写评估脚本，对打标结果进行评估，绘制混淆矩阵，计算准确率、召回率、F1分数等指标
+    - [ ] 对照streamlit看下api的回复，优化提示词，现在的效果太差了
+    - [ ] 将gpt5.1、5.2的500条打标结果融入到test里面
+    - [ ] 测试gpt5.1 5.2 qwen3.5 以及8b模型的打标结果
+    - [ ] 根据测试结果进行大规模打标
     
 
 

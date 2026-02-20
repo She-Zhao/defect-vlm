@@ -119,8 +119,9 @@ async def process_single_task(
             messages = build_send_message(sample)
             response = await client.chat.completions.create(
                 model = model,
-                messages = messages
-                # max_tokens=10
+                messages = messages,
+                temperature=0.0,
+                max_tokens=8192
             )
             
             # 检查 response 和 choices 是否有效
@@ -136,6 +137,14 @@ async def process_single_task(
             else:
                 # API 成功了，但返回了空的 'choices' 列表或 None
                 print(f"❌ API 警告 (ID: {sample['id']}): 响应中缺少 'choices'。")
+                # sample['conversation'][1]['value'] = 'ERROR: Empty choices list'
+                
+                # 【新增这行】把服务器到底回了什么原封不动地打印出来
+                try:
+                    print(f"🔍 原始响应内容: {response.model_dump_json(indent=2)}")
+                except:
+                    print(f"🔍 原始响应内容 (Raw): {response}")
+                    
                 sample['conversation'][1]['value'] = 'ERROR: Empty choices list'
         
         except APIError as e: # 更具体地捕获 API 错误
@@ -247,27 +256,32 @@ def main():
 
 if __name__ == "__main__":
     # 通过命令行运行
-    main()
+    # main()
     
     # 通过代码运行
-    # test_args = argparse.Namespace()
+    test_args = argparse.Namespace()
 
-    # # 修改下面这部分参数即可
-    # test_args.provider = 'qwen'                                         # 提供商
-    # test_args.model = 'qwen3-vl-plus'                                   # 模型名称
-    # test_args.input_file = '/data/ZS/defect_dataset/4_api_request/val/stripe_phase012_gt_positive.jsonl'            # 输入文件
-    # test_args.output_file = '/data/ZS/defect_dataset/5_api_response/val/stripe_phase012_gt_positive.jsonl'    # 调用api后得到的输出文件
-    # test_args.concurrency = 2                                          # 并发数
+    # 修改下面这部分参数即可
+    test_args.provider = 'qwen'                                                       # 提供商
+    # test_args.model = 'qwen3-vl-235b-a22b-instruct'                                   # 模型名称
+    # test_args.input_file = '/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-235b-a22b-instruct.jsonl'            # 输入文件
+    # test_args.output_file = '/data/ZS/defect_dataset/5_api_response/retry/qwen3-vl-235b-a22b-instruct.jsonl'    # 调用api后得到的输出文件
     
-    # print(f"--- 正在从脚本中启动 call_llm_api_robust (调试模式) ---")
-    # print(f"   Provider: {test_args.provider}")
-    # print(f"   Model: {test_args.model}")
-    # print(f"   Input: {test_args.input_file}")
-    # print(f"   Output: {test_args.output_file}")
-    # print(f"   Concurrency: {test_args.concurrency}")
+    test_args.model = 'qwen3-vl-235b-a22b-instruct'                                   # 模型名称
+    test_args.input_file = '/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-235b-a22b-instruct.jsonl'            # 输入文件
+    test_args.output_file = '/data/ZS/defect_dataset/5_api_response/retry/qwen3-vl-235b-a22b-instruct.jsonl'
+
+    test_args.concurrency = 1                                                         # 并发数
     
-    # try:
-    #     asyncio.run(process_batch_task(test_args))
-    #     print(f"--- 脚本调用执行完毕 ---")
-    # except Exception as e:
-    #     print(f"--- 脚本调用时发生错误: {e} ---")
+    print(f"--- 正在从脚本中启动 call_llm_api_robust (调试模式) ---")
+    print(f"   Provider: {test_args.provider}")
+    print(f"   Model: {test_args.model}")
+    print(f"   Input: {test_args.input_file}")
+    print(f"   Output: {test_args.output_file}")
+    print(f"   Concurrency: {test_args.concurrency}")
+    
+    try:
+        asyncio.run(process_batch_task(test_args))
+        print(f"--- 脚本调用执行完毕 ---")
+    except Exception as e:
+        print(f"--- 脚本调用时发生错误: {e} ---")
