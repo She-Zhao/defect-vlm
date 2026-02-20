@@ -69,6 +69,6 @@ def inspect_jsonl(file_path: str, num_samples: int = 3):
 
 if __name__ == "__main__":
     # 这里填入你刚才生成的文件路径
-    target_file = '/data/ZS/defect_dataset/4_api_request/train/stripe_phase123_gt_rectification.jsonl'
+    target_file = '/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-plus.jsonl'
     
-    inspect_jsonl(target_file, num_samples=3)
+    inspect_jsonl(target_file, num_samples=1)

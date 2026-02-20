@@ -111,8 +111,12 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
         - [x] 重复上述流程，直到没有错误样本为止
     - [x] 从val里面抽取一部分数据，用于选择教师模型
     - [x] 调用api进行打标
+    - [x] 修改/data/ZS/defect_dataset/4_api_request/test /data/ZS/defect_dataset/5_api_response/test /data/ZS/defect_dataset/backup/5_api_response 里面对于rectification项sample_type的名称
+    - [x] 查看打标结果，看下错误的数量及原因。(原因：缺陷名称有的是Bulge，有的是bulge；回复的json字符串里面有的有转义字符，可以通过json.loads(strict=False)来解决该问题)
+    - [x] 分析下重复打标的原因，将/data/ZS/defect_dataset/5_api_response/test里面打标的id进行矫正，并看是否和/data/ZS/defect_dataset/4_api_request/test有所重复。（012_pos200_neg150_rect150和012_pos400_neg300_rect300里面不是完全重复的，因为前者用的是random.shuffle，后者用的是random.sample）
+    - [x] 撰写可视化脚本，根据打标得到的结果，对打标结果和对应图像进行可视化
     - [ ] 编写评估脚本，对打标结果进行评估，绘制混淆矩阵，计算准确率、召回率、F1分数等指标
     - [ ] 测试不同模型效果（教师模型和学生模型）
-    - [ ] 撰写可视化脚本，根据打标得到的结果，对打标结果和对应图像进行可视化
+    
 
 
