@@ -6,7 +6,7 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score, precision_score, f1_score
 from sklearn.metrics import confusion_matrix, classification_report
 
-CLASSES = ['breakage', 'inclusion', 'crater', 'bulge', 'scratch', 'run', 'none']
+CLASSES = ['breakage', 'inclusion', 'crater', 'bulge', 'scratch', 'run', 'background']
 
 def main(json_path: str, cm_name: str) -> None:
     y_pred = [] 
@@ -92,7 +92,7 @@ def main(json_path: str, cm_name: str) -> None:
     
     
 if __name__ == "__main__":
-    json_path = '/data/ZS/defect_dataset/6_sft_dataset/test/qwen3-vl-plus.jsonl'
+    json_path = '/data/ZS/defect_dataset/5_api_response/student/test/gpt-5.1.jsonl'
     # 自动获取文件名作为保存名称
     cm_name = Path(json_path).stem
     

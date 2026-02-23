@@ -81,16 +81,16 @@ def main(jsonl_list: List[str], sample_num_list: List[int], prefixes: List[str],
     
 if __name__ == "__main__":
     jsonl_list = [
-        '/data/ZS/defect_dataset/4_api_request/val/stripe_phase012_gt_positive.jsonl',
-        '/data/ZS/defect_dataset/4_api_request/val/stripe_phase012_gt_negative.jsonl',
-        '/data/ZS/defect_dataset/4_api_request/val/stripe_phase012_gt_rectification.jsonl'
+        '/data/ZS/defect_dataset/4_api_request/teacher/val/stripe_phase012_gt_positive.jsonl',
+        '/data/ZS/defect_dataset/4_api_request/teacher/val/stripe_phase012_gt_negative.jsonl',
+        '/data/ZS/defect_dataset/4_api_request/teacher/val/stripe_phase012_gt_rectification.jsonl'
     ]
     
     sample_num_list = [400, 300, 300]
     
     # 定义对应的前缀，建议简短一点
-    prefixes = ['sp012_gt_pos', 'sp012_gt_neg', 'sp012_gt_rect']
+    prefixes = ['sp012_gt_pos_tea', 'sp012_gt_neg_tea', 'sp012_gt_rect_tea']
     
-    save_path = '/data/ZS/defect_dataset/4_api_request/test/012_pos400_neg300_rect300.jsonl'
+    save_path = '/data/ZS/defect_dataset/4_api_request/teacher/test/012_pos400_neg300_rect300.jsonl'
     
     main(jsonl_list, sample_num_list, prefixes, save_path)

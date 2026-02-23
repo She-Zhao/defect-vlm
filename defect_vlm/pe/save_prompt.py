@@ -44,7 +44,7 @@ def save_prompt(prompt_text_txt: Path, pe_json_path: Path) -> None:
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = '保存txt文件中提示词到相应的json文件')
-    parser.add_argument('--input_file', type=str, default='./pe/prompt_text.txt', help='撰写提示词的txt文件的路径')
+    parser.add_argument('--input_file', type=str, default='./pe/prompt_text_tea.txt', help='撰写提示词的txt文件的路径')
     parser.add_argument('--output_file', type=str, default='./pe/prompts.json', help='存储各版本prompt的json文件')
 
     args = parser.parse_args()

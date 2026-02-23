@@ -22,25 +22,72 @@ import json
 #     print(ai_response)
 #     print(ai_response_str)
 
-def count_ids(json_path):
-    with open(json_path, 'r', encoding='utf-8') as f:
-        data = [json.loads(line) for line in f if line.strip()]
+# def count_ids(json_path):
+#     with open(json_path, 'r', encoding='utf-8') as f:
+#         data = [json.loads(line) for line in f if line.strip()]
     
-    all_id = {}
-    for item in data:
-        id_ = item['id']
-        all_id[id_] = item.get(id_, 0) + 1
+#     all_id = {}
+#     for item in data:
+#         id_ = item['id']
+#         all_id[id_] = item.get(id_, 0) + 1
     
+#     return all_id
+
+import json
+
+def get_id(js):
+    all_id = set()
+    with open(js, 'r', encoding='utf-8') as f:
+        for line in f:
+            if not line.strip(): continue
+            
+            item = json.loads(line)
+            all_id.add(item['id'])
+
     return all_id
+
+def copy_same_item(input_json, output_json, same_id):
+    cnt = 0
+    with open(input_json, 'r', encoding='utf-8') as f_in, \
+        open(output_json, 'a', encoding='utf-8') as f_out:
+        for line in f_in:
+            if not line.strip(): continue
+            
+            item = json.loads(line)
+            if item['id'] in same_id:
+                f_out.write(json.dumps(item, ensure_ascii=False) + '\n')
+                cnt += 1
+    
+    print(f"已从 {input_json} 中复制 {cnt} 条数据到 {output_json}中")
+
+def copy_different_item(input_json, output_json, same_id):
+    cnt = 0
+    with open(input_json, 'r', encoding='utf-8') as f_in, \
+        open(output_json, 'a', encoding='utf-8') as f_out:
+        for line in f_in:
+            if not line.strip(): continue
+            
+            item = json.loads(line)
+            if item['id'] not in same_id:
+                f_out.write(json.dumps(item, ensure_ascii=False) + '\n')
+                cnt += 1
+    
+    print(f"已从 {input_json} 中复制 {cnt} 条数据到 {output_json}中")
 
 if __name__ == "__main__":
     # json_path = '/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-plus.jsonl'
-    json_path1 = '/data/ZS/defect_dataset/4_api_request/test/012_pos200_neg150_rect150.jsonl'
-    json_path2 = '/data/ZS/defect_dataset/backup/5_api_response/qwen3-vl-235b-a22b-thinking.jsonl'
+    js1 = '/data/ZS/defect_dataset/6_sft_dataset/test/gemini-3-pro-preview.jsonl'
+    js2 = '/data/ZS/defect_dataset/backup/5_api_response/gemini-3-pro-preview.jsonl'
     
-    ids1 = count_ids(json_path1)
-    ids2 = count_ids(json_path2)
+    all_id1 = get_id(js1)
+    all_id2 = get_id(js2)
   
-    print(ids1 == ids2) 
+    same_id = all_id1 & all_id2
+    print(f"相同id数量: {len(same_id)}")
+
+
+    input_json = '/data/ZS/defect_dataset/backup/5_api_response/qwen3-vl-235b-a22b-thinking.jsonl'
+    output_json = '/data/ZS/defect_dataset/backup/5_api_response/qwen3-vl-235b-a22b-thinking_not_in_test1000.jsonl'
+    copy_different_item(input_json, output_json, same_id)
     # print(ids1)
     # print(ids2)

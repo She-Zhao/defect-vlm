@@ -57,6 +57,8 @@ def inspect_jsonl(file_path: str, num_samples: int = 3):
             else:
                 print("✅ 提示词格式检查通过 (无 '{}' 占位符)")
             
+            print(entry['conversation'][0]['value'])
+            
             # 检查图片路径
             img_paths = entry.get('image', [])
             if not img_paths or not all(isinstance(p, str) for p in img_paths):
@@ -69,6 +71,6 @@ def inspect_jsonl(file_path: str, num_samples: int = 3):
 
 if __name__ == "__main__":
     # 这里填入你刚才生成的文件路径
-    target_file = '/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-plus.jsonl'
+    target_file = '/data/ZS/defect_dataset/4_api_request/teacher/test/012_pos400_neg300_rect300.jsonl'
     
     inspect_jsonl(target_file, num_samples=1)

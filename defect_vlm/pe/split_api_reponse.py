@@ -7,7 +7,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 REQUIRED_KEYS = set(['step1','step2','step3', 'defect'])
-REQUIRED_DEFECTS = set(['breakage', 'inclusion', 'crater', 'bulge', 'scratch', 'run', 'none'])
+REQUIRED_DEFECTS = set(['breakage', 'inclusion', 'crater', 'bulge', 'scratch', 'run', 'background'])
 
 def check_ai_response(item: dict) -> bool:
     """
@@ -77,7 +77,7 @@ def main(api_response_path: str, save_path: str, retry_path: str) -> None:
     bad_cnt = 0
     
     with open(api_response_path, 'r', encoding='utf-8') as f_in, \
-        open(save_path, 'a', encoding='utf-8') as f_good, \
+        open(save_path, 'w', encoding='utf-8') as f_good, \
         open(retry_path, 'w', encoding='utf-8') as f_bad:
         
         for line in tqdm(f_in, desc='Processing item'):
@@ -104,8 +104,8 @@ def main(api_response_path: str, save_path: str, retry_path: str) -> None:
         
 if __name__ == "__main__":
     main(
-        api_response_path = "/data/ZS/defect_dataset/5_api_response/retry/qwen3-vl-235b-a22b-instruct.jsonl",
-        save_path = "/data/ZS/defect_dataset/6_sft_dataset/test/qwen3-vl-235b-a22b-instruct.jsonl" ,
-        retry_path = "/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-235b-a22b-instruct.jsonl"
+        api_response_path = "/data/ZS/defect_dataset/5_api_response/student/test/gpt-5.2.jsonl",
+        save_path = "/data/ZS/defect_dataset/6_sft_dataset/student/test/gpt-5.2.jsonl" ,
+        retry_path = "/data/ZS/defect_dataset/4_api_request/student/retry/gpt-5.2.jsonl"
     )
  

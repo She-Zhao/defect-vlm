@@ -1,8 +1,9 @@
 <image>\n<image>
-Prior Hint: {}
+Prior Hint: {prior_label}
+Ground Truth Defect Label: {label}
 
 # Role & Imaging Principle
-You are an automotive paint defect analysis expert, excelling at judging whether defects exist in specific areas of automotive paint based on reflection characteristics under striped light.
+You are a senior automotive paint defect interpretation and annotation expert, specializing in extracting visual features that support the given defect label by analyzing the reflection characteristics of the paint surface under striped light, thereby generating a perfect "standard reference answer" for fine-tuning a smaller model.
 Since automotive paint is a mirror-like high-reflective surface, the system uses an LCD screen to project black and white striped light sources, forming reflection textures on the paint surface which are captured by an industrial camera. You need to make judgments based on the texture distortion in the captured images.
 
 # Image Input Description
@@ -11,12 +12,14 @@ Two images are provided above:
 2. **[Image 2: Local Detail]**: A local detail mosaic, corresponding to the magnified view of the red box area, presented in pseudo-RGB colors (only used to enhance contrast).
 Each image is a **2×2 grid** stitched from four sub-images. The four patches (Top-Left, Top-Right, Bottom-Left, Bottom-Right) represent the imaging of the **same physical location under 4 different types of striped light sources**.
 
-# Task Objectives & Notes
-For the red box area, the prior defect hint is: **"{}"**. **Please note: This hint may be inaccurate, and the area may even be completely defect-free.**
-
-Your task is to utilize the visual information from [Image 1] and [Image 2] to **verify whether a defect matching the prior hint truly exists in the red box area**. If it does not match, please correct it to the real defect category; if there is no defect, please output "None".
+# Task Objective
+For the red-boxed area, the [Prior Hint] is: "{prior_label}", while the [Ground Truth Defect Label] for this area is: "{label}".
+Your core task is: combine the visual information from [Image 1] and [Image 2] to simulate a perfect "verification and correction" reasoning process. You must not only identify the visual evidence supporting the [Ground Truth Defect Label], but also naturally respond to and evaluate the [Prior Hint] within the reasoning logic.
 
 # Notes
+- **Must respond to the prior hint**: In the analysis (especially Step 3), you must explicitly mention and evaluate the [Prior Hint].
+  - **If the prior hint is correct** (prior label == ground truth label): Explain which specific visual features in the image perfectly validate the prior hint.
+  - **If the prior hint is incorrect** (prior label != ground truth label): First explain why the image features do not support the [Prior Hint], then elaborate on how the actual visual features point to the [Ground Truth Defect Label].
 - **Single Target Focus**: Focus only on the red box area and its corresponding details in [Image 2]. Even if other defects exist in the global view or within the red box, please **ignore** them and only verify/correct the current prior type.
 - **Single Light Source Judgment**: Defects may be clearly visible only in a specific patch. **As long as clear defect features are found in any one patch, the area is judged to have a defect.**
 - **Texture Priority**: Ignore the pseudo-RGB colors and focus on **texture geometric morphology** (distortion, breakage) and **light-dark contrast**.
@@ -33,13 +36,12 @@ The following are the visual characteristics of common defects under this light 
 # Analysis Steps (Please think strictly according to the following steps)
 1.  **Step 1 (Environment & Background Analysis)**: Observe [Image 1] and its four patches to confirm the normal flow of the stripes. Note the differences in background texture under different light sources.
 2.  **Step 2 (Local Texture Check)**: Focus on [Image 2] and its four patches. **Check each patch in turn**. Look for "abnormal" signals (such as stripe distortion, black spots, abnormal bright spots). Finding clear defect features in just one patch is enough to support the existence of a defect.
-3.  **Step 3 (Feature Matching & Comprehensive Analysis)**: Compare the observed abnormal features with the "Defect Definitions" to exclude common noise or dust interference. Output the reasoning process and analysis results in a Chain of Thought format.
+3.  **Step 3 (Feature Matching & Comprehensive Analysis)**: Compare the observed abnormal features with the "Defect Definitions" to exclude common noise or dust interference. Evaluate whether the visual features support the [Prior Hint]. Output the reasoning process and analysis results in a Chain of Thought format.
 
 # Output Format
 Please output strictly in the following JSON format, do not include markdown code blocks (such as ```json ... ```):
 {
     "step1": "Analyze the distribution of the four light sources and the background texture in the global view...",
     "step2": "Describe the abnormal features found in any patch of the local view (e.g., obvious stripe breakage visible in the top-right patch)...",
-    "step3": "The reasoning process of matching features with defect definitions, output in Chain of Thought format...",
-    "defect": "Defect Category Name" (If there is no defect, please output "None")
+    "step3": "The reasoning process of matching features with defect definitions, output in Chain of Thought format..."
 }

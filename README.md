@@ -116,10 +116,10 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
     - [x] 分析下重复打标的原因，将/data/ZS/defect_dataset/5_api_response/test里面打标的id进行矫正，并看是否和/data/ZS/defect_dataset/4_api_request/test有所重复。（012_pos200_neg150_rect150和012_pos400_neg300_rect300里面不是完全重复的，因为前者用的是random.shuffle，后者用的是random.sample）
     - [x] 撰写可视化脚本，根据打标得到的结果，对打标结果和对应图像进行可视化
     - [x] 编写评估脚本，对打标结果进行评估，绘制混淆矩阵，计算准确率、召回率、F1分数等指标
-    - [ ] 对照streamlit看下api的回复，优化提示词，现在的效果太差了
-    - [ ] 将gpt5.1、5.2的500条打标结果融入到test里面
+    - [x] 将gpt5.1、5.2的500条打标结果融入到test里面
     - [ ] 测试gpt5.1 5.2 qwen3.5 以及8b模型的打标结果
+    - [ ] 用新的提示词生成对应的sft文件，并简单测试下效果（抽样一部分人工看一下）
+    - [x] 整理下目前打标的这部分数据，作为第二章的对比实验
+    - [x] 将数据集里面的none统一改成background, 从/data/ZS/defect_dataset/4_api_request/student/train开始
     - [ ] 根据测试结果进行大规模打标
-    
-
-
+ 

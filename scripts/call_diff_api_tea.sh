@@ -5,8 +5,8 @@
 # 建议使用绝对路径，避免找不到文件
 PROJECT_ROOT="/data/ZS/defect-vlm"
 SCRIPT_PATH="$PROJECT_ROOT/defect_vlm/pe/call_api.py"
-INPUT_FILE="/data/ZS/defect_dataset/4_api_request/student/test/012_pos400_neg300_rect300.jsonl"
-OUTPUT_DIR="/data/ZS/defect_dataset/5_api_response/student/test"
+INPUT_FILE="/data/ZS/defect_dataset/4_api_request/teacher/test/012_pos400_neg300_rect300.jsonl"
+OUTPUT_DIR="/data/ZS/defect_dataset/5_api_response/teacher/test"
 
 # 确保输出目录存在
 mkdir -p "$OUTPUT_DIR"
