@@ -92,7 +92,7 @@ def main(json_path: str, cm_name: str) -> None:
     
     
 if __name__ == "__main__":
-    json_path = '/data/ZS/defect_dataset/5_api_response/student/test/gpt-5.1.jsonl'
+    json_path = '/data/ZS/defect_dataset/6_sft_dataset/student/test/qwen3.5-plus.jsonl'
     # 自动获取文件名作为保存名称
     cm_name = Path(json_path).stem
     

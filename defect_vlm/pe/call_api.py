@@ -258,7 +258,7 @@ if __name__ == "__main__":
     # 通过命令行运行
     main()
     
-    # # 通过代码运行
+    # 通过代码运行
     # test_args = argparse.Namespace()
 
     # # 修改下面这部分参数即可
@@ -268,8 +268,8 @@ if __name__ == "__main__":
     # # test_args.output_file = '/data/ZS/defect_dataset/5_api_response/retry/qwen3-vl-235b-a22b-instruct.jsonl'    # 调用api后得到的输出文件
     
     # test_args.model = 'qwen3-vl-235b-a22b-instruct'                                   # 模型名称
-    # test_args.input_file = '/data/ZS/defect_dataset/4_api_request/retry/qwen3-vl-235b-a22b-instruct.jsonl'            # 输入文件
-    # test_args.output_file = '/data/ZS/defect_dataset/5_api_response/retry/qwen3-vl-235b-a22b-instruct.jsonl'
+    # test_args.input_file = '/data/ZS/defect_dataset/4_api_request/teacher/retry/qwen3-vl-235b-a22b-instruct.jsonl'            # 输入文件
+    # test_args.output_file = '/data/ZS/defect_dataset/5_api_response/teacher/retry/qwen3-vl-235b-a22b-instruct.jsonl'
 
     # test_args.concurrency = 1                                                         # 并发数
     
