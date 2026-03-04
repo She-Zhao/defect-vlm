@@ -122,5 +122,12 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
     - [x] 整理下目前打标的这部分数据，作为第二章的对比实验
     - [x] 将数据集里面的none统一改成background, 从/data/ZS/defect_dataset/4_api_request/student/train开始
     - [x] 根据测试结果进行大规模打标
-    - [ ] 将打标结果进行分析，抽一部分看看效果
+    - [x] 将打标结果进行分析，抽一部分看看效果
+- [ ] 训练脚本
+    - [x] train/val/test数据集转化为ms-swift格式的脚本
+    - [x] 读取ms-swift格式数据集中的数据，调用模型进行推理，并保存推理结果的脚本
+    - [x] 评估脚本，绘制混淆矩阵，计算准确率、召回率、F1
+    - [x] 评估下不同模型的效果
+    - [ ] 微调模型的代码
+    - [ ] 合并权重，并评估模型效果的代码
  
