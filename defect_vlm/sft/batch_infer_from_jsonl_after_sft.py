@@ -1,22 +1,39 @@
 """
-读取ms swift格式的jsonl文件，推理并保存结果
+读取ms swift格式的jsonl文件，推理并保存结果。适用于SFT之后的模型，直接输入原始模型+
 """
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,3'
 os.environ['MAX_PIXELS'] = '1003520'
 import json
 from tqdm import tqdm
 from swift.infer_engine import TransformersEngine, RequestConfig, InferRequest
+from swift import get_model_processor, get_template
+from swift.utils import safe_snapshot_download
+from peft import PeftModel
 
-
-def init_engine(model_path: str):
+def init_engine(model_path: str, adapter_path: str=None):
     """
     初始化模型引擎和配置参数
     建议：配置 max_batch_size (比如4或8) 和 temperature=0
     """
+    template_type = None                # None: 使用对应模型默认的template_type
+    default_system = None               # None: 使用对应模型默认的default_system
+    
+    model, tokenizer = get_model_processor(model_path, device_map='auto')
+    if adapter_path is not None:
+        model = PeftModel.from_pretrained(model, adapter_path)
+    
+        # 👇 加入这行神仙代码：将 LoRA 永久熔合进底座物理内存中！
+        print("⚡ 正在执行权重合并 (Merge) 以恢复满血推理速度...")
+        model = model.merge_and_unload()
+
+    template_type = template_type or model.model_meta.template
+    template = get_template(tokenizer, template_type=template_type, default_system=default_system)
+    
     # 加载推理引擎
-    print(f"正在加载模型: {model_path} ...")
-    engine = TransformersEngine(model_path, max_batch_size=24, model_kwargs={'device_map': 'auto'})
+    print(f"正在加载底座模型: {model_path} ...")
+    print(f"正在挂载 LoRA 权重: {adapter_path} ...")
+    engine = TransformersEngine(model, template=template, max_batch_size=2)
     request_config = RequestConfig(max_tokens=4096, temperature=0)
     
     return engine, request_config
@@ -28,8 +45,11 @@ def build_requests(data_chunk: list) -> list[InferRequest]:
     """
     infer_requests = []
     for item in data_chunk:
+        # 确保喂给模型的 messages 里只有 user 的提问，不能有 assistant 的历史答案
+        prompt_messages = [msg for msg in item['messages'] if msg['role'] != 'assistant']
+        
         infer_requests.append(InferRequest(
-            messages = item['messages'],
+            messages = prompt_messages,
             images = item['images']
         ))
 
@@ -59,7 +79,7 @@ def infer_and_save_chunk(engine, request_config, data_chunk: list, output_path: 
         for item in data_chunk:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
 
-def main(input_path, output_path, model_path, chunk_size=2):
+def main(input_path, output_path, model_path, adapter_path, chunk_size=2):
     """
     主控流：
     1. 定义 input_path, output_path, model_path
@@ -96,7 +116,7 @@ def main(input_path, output_path, model_path, chunk_size=2):
         return
         
     # 5. 只有在需要推理时，才消耗时间加载模型 (优化点)
-    engine, request_config = init_engine(model_path)
+    engine, request_config = init_engine(model_path, adapter_path)
     
     # 6. 开始分块推理
     for i in tqdm(range(0, rest_items, chunk_size), desc='Processing'):
@@ -109,8 +129,10 @@ def main(input_path, output_path, model_path, chunk_size=2):
             
 
 if __name__ == "__main__":
-    input_path = '/data/ZS/defect_dataset/7_swift_dataset/student/test/012_pos400_neg300_rect300.jsonl'
-    output_path = '/data/ZS/defect_dataset/8_model_reponse/student/test/qwen2.5-vl-7b-instrusct.jsonl'
-    model_path = 'Qwen/Qwen2.5-VL-7B-Instruct'
-    chunk_size = 24
-    main(input_path, output_path, model_path, chunk_size)
+    input_path = '/data/ZS/defect_dataset/7_swift_dataset/test/012_pos400_neg300_rect300.jsonl'
+    output_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v0-20260307-114111_qwen3_4b_woval_checkpoint_4893.jsonl'
+    model_path = 'Qwen/Qwen3-VL-4B-Instruct'
+    adapter_path = '/data/ZS/defect-vlm/output/weights/v0-20260307-114111_qwen3_4b_woval/checkpoint-4893'
+    chunk_size = 2
+    
+    main(input_path, output_path, model_path, adapter_path, chunk_size)

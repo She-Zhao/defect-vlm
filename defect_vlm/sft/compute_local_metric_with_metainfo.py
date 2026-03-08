@@ -1,3 +1,6 @@
+"""
+输入包含 'meta_info' 的数据集（测试集），计算相应的指标
+"""
 import json
 from pathlib import Path
 import numpy as np
@@ -117,7 +120,7 @@ def main(json_path: str, cm_name: str) -> None:
     
     
 if __name__ == "__main__":
-    json_path = '/data/ZS/defect_dataset/8_model_reponse/student/test/qwen2.5-vl-7b-instrusct.jsonl'
+    json_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v0-20260307-114111_qwen3_4b_woval_checkpoint_4893.jsonl'
     # 自动获取文件名作为保存名称
     cm_name = Path(json_path).stem
     

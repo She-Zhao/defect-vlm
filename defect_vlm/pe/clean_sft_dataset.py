@@ -5,6 +5,7 @@
     删除fail_reason字段
 """
 import json
+from pathlib import Path
 
 def clean_jsonl_data(input_filepath, output_filepath):
     """
@@ -42,6 +43,7 @@ def clean_jsonl_data(input_filepath, output_filepath):
             
             # 2. 删除 meta_info 里面的 fail_reason 字段
             # 我们需要先确认 meta_info 存在，且其中包含 fail_reason
+            # import pdb; pdb.set_trace()
             if "meta_info" in data and "fail_reason" in data["meta_info"]:
                 del data["meta_info"]["fail_reason"]
                 fail_reason_count += 1
@@ -58,9 +60,20 @@ def clean_jsonl_data(input_filepath, output_filepath):
 
 # ========== 使用方法 ==========
 if __name__ == "__main__":
-    # 请将这里的路径替换为你实际的文件路径
-    input_file = "/data/ZS/defect_dataset/6_sft_dataset/teacher/train/stripe_phase123_gt_negative.jsonl"   # 你的原始文件
-    output_file = "/data/ZS/defect_dataset/6_sft_dataset/teacher/train/stripe_phase123_gt_negative1.jsonl"   # 清洗后保存的新文件
+    input_dir = Path('/data/ZS/defect_dataset/6_sft_dataset/teacher/val')
+    output_dir = Path('/data/ZS/defect_dataset/6_sft_dataset/teacher/val1')
+
+    input_files = sorted(list(input_dir.glob('*.jsonl')))
     
-    clean_jsonl_data(input_file, output_file)
+    for input_file in input_files:
+        input_path = str(input_file)
+        output_path = str(output_dir / input_file.name)
+        clean_jsonl_data(input_path, output_path)
+    
+    
+    # 请将这里的路径替换为你实际的文件路径
+    # input_file = "/data/ZS/defect_dataset/6_sft_dataset/teacher/train/stripe_phase123_gt_negative.jsonl"   # 你的原始文件
+    # output_file = "/data/ZS/defect_dataset/6_sft_dataset/teacher/train/stripe_phase123_gt_negative1.jsonl"   # 清洗后保存的新文件
+    
+    # clean_jsonl_data(input_file, output_file)
             

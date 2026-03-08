@@ -2,6 +2,7 @@
 将 "id": 1000233 重命名为 "sp012_gt_neg_1000142"
 """
 import json
+from pathlib import Path
 
 def rename_ids(input_file, output_file, prefix: str='sp012'):
     # 用于统计各类样本的数量
@@ -61,9 +62,22 @@ def rename_ids(input_file, output_file, prefix: str='sp012'):
         print(f"⚠️ 未匹配关键字 (unk) 样本数: {counts['unknown']}")
 
 if __name__ == "__main__":
-    # 请在这里替换为你的实际文件路径
-    input_path = "/data/ZS/defect_dataset/backup/6_sft_dataset/teacher/train/stripe_phase123_gt_negative.jsonl"
-    output_path = "/data/ZS/defect_dataset/6_sft_dataset/teacher/train/stripe_phase123_gt_negative.jsonl"
-    prefix = 'sp123'
+    input_dir = Path('/data/ZS/defect_dataset/backup/4_api_request/teacher/val')
+    output_dir = Path('/data/ZS/defect_dataset/4_api_request/teacher/val')
+    output_dir.mkdir(exist_ok=True, parents=True)
+    prefix_list = ['sp012', 'sp012', 'sp012', 'sp123', 'sp123', 'sp123']
     
-    rename_ids(input_path, output_path, prefix=prefix)
+    input_files = sorted(input_dir.glob('*.jsonl'))
+    
+    for input_file, prefix in zip(input_files, prefix_list):
+        input_path = str(input_file)
+        output_path = str(output_dir / input_file.name)
+        # import pdb; pdb.set_trace()
+        rename_ids(input_path, output_path, prefix=prefix)
+        
+    # # 请在这里替换为你的实际文件路径
+    # input_path = "/data/ZS/defect_dataset/4_api_request/teacher/val/stripe_phase012_gt_negative.jsonl"
+    # output_path = "/data/ZS/defect_dataset/6_sft_dataset/teacher/train/stripe_phase123_gt_negative.jsonl"
+    # prefix = 'sp123'
+    
+    # rename_ids(input_path, output_path, prefix=prefix)

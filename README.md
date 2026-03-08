@@ -55,7 +55,10 @@ defect_datasets_vlm/        <-- 用于微调VLM的数据集，只存储了region
 ├── paint_stripe_gt_positive/           <-- 从标注的数据集里构造的正样本
 ├── paint_stripe_gt_negative/           <-- 从标注的数据集里构造的负样本
 │  
-│   
+
+/data/ZS/defect_dataset/7_swift_dataset        <-- 转化为ms-swift格式的数据集，里面模型的回答都是教师模型的
+/data/ZS/defect_dataset/8_model_reponse        <-- 调用模型进行推理得到的结果，里面模型的回答都是学生模型的
+
 ```
 
 ### 数据预处理流程

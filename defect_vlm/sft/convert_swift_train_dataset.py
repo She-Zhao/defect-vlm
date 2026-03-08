@@ -114,9 +114,9 @@ def convert_to_swift_format(stu_path, tea_path, output_path):
     print(f"✅ 成功处理了 {success_count} 条数据。\n")
 
 if __name__ == "__main__":
-    tea_dir = Path('/data/ZS/defect_dataset/6_sft_dataset/teacher/train')
-    stu_dir = Path('/data/ZS/defect_dataset/4_api_request/student/train')
-    output_dir = Path('/data/ZS/defect_dataset/7_swift_dataset/train')
+    tea_dir = Path('/data/ZS/defect_dataset/6_sft_dataset/teacher/val')
+    stu_dir = Path('/data/ZS/defect_dataset/4_api_request/student/val')
+    output_dir = Path('/data/ZS/defect_dataset/7_swift_dataset/val')
     
     tea_jsonls = sorted(list(tea_dir.glob('*.jsonl')))
     stu_jsonls = sorted(list(stu_dir.glob('*.jsonl')))

@@ -95,9 +95,27 @@ def main(api_response_path: str, save_path: str, retry_path: str) -> None:
     print(f"❌ 错误样本 (Bad) : {bad_cnt} -> 保存至 {retry_path}")
         
 if __name__ == "__main__":
-    main(
-        api_response_path = "/data/ZS/defect_dataset/5_api_response/teacher/retry/stripe_phase123_gt_negative.jsonl",
-        save_path = "/data/ZS/defect_dataset/6_sft_dataset/teacher/train/stripe_phase123_gt_negative.jsonl",
-        retry_path = "/data/ZS/defect_dataset/4_api_request/teacher/retry/stripe_phase123_gt_negative.jsonl"
-    )
+    api_response_dir = Path('/data/ZS/defect_dataset/5_api_response/teacher/retry/val')
+    save_dir = Path('/data/ZS/defect_dataset/6_sft_dataset/teacher/val')
+    retry_dir = Path('/data/ZS/defect_dataset/4_api_request/teacher/retry')
+    
+    api_response_files = list(api_response_dir.glob('*.jsonl'))
+    
+    for api_response_file in api_response_files:
+        api_response_path = str(api_response_file)
+        save_path = str(save_dir / api_response_file.name)
+        retry_path = str(retry_dir / api_response_file.name)
+        # import pdb; pdb.set_trace()
+    
+        main(
+            api_response_path = api_response_path,
+            save_path = save_path,
+            retry_path = retry_path
+        )
+    
+    # main(
+    #     api_response_path = "/data/ZS/defect_dataset/5_api_response/teacher/retry/stripe_phase123_gt_negative.jsonl",
+    #     save_path = "/data/ZS/defect_dataset/6_sft_dataset/teacher/train/stripe_phase123_gt_negative.jsonl",
+    #     retry_path = "/data/ZS/defect_dataset/4_api_request/teacher/retry/stripe_phase123_gt_negative.jsonl"
+    # )
  

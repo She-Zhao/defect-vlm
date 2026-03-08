@@ -1,5 +1,6 @@
 """
 4_api_request/test/val下的jsonl数据转化为ms-swift推理需要的message格式, 并保存到7_swift_dataset下面
+暂时不用这个，因为验证集也需要有回复。预计后面这个脚本会废弃。
 """
 import json
 import os

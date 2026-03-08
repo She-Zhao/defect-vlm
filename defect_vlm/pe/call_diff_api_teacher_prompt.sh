@@ -9,7 +9,7 @@ SCRIPT_PATH="$PROJECT_ROOT/defect_vlm/pe/call_api.py"
 # OUTPUT_DIR="/data/ZS/defect_dataset/5_api_response/teacher/test"
 
 INPUT_DIR="/data/ZS/defect_dataset/4_api_request/teacher/retry"
-OUTPUT_DIR="/data/ZS/defect_dataset/5_api_response/teacher/retry"
+OUTPUT_DIR="/data/ZS/defect_dataset/5_api_response/teacher/retry/val"
 
 # 确保输出目录存在
 mkdir -p "$OUTPUT_DIR"
@@ -69,13 +69,6 @@ python "$SCRIPT_PATH" \
     --output_file "$OUTPUT_DIR/stripe_phase123_gt_rectification.jsonl" \
     --concurrency 1
 
-# echo "👉 Running qwen3.5-plus..."
-# python "$SCRIPT_PATH" \
-#     --provider qwen \
-#     --model qwen3.5-plus \
-#     --input_file "$INPUT_FILE" \
-#     --output_file "$OUTPUT_DIR/qwen3.5-plus.jsonl" \
-#     --concurrency 1
 
 echo "========================================"
 echo "✅ 所有任务已完成"
