@@ -57,7 +57,7 @@ defect_datasets_vlm/        <-- 用于微调VLM的数据集，只存储了region
 │  
 
 /data/ZS/defect_dataset/7_swift_dataset        <-- 转化为ms-swift格式的数据集，里面模型的回答都是教师模型的
-/data/ZS/defect_dataset/8_model_reponse        <-- 调用模型进行推理得到的结果，里面模型的回答都是学生模型的
+/data/ZS/defect_dataset/8_model_reponse        <-- 调用模型进行推理得到的结果，里面模型的回答都是学生型的
 
 ```
 
@@ -126,11 +126,18 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
     - [x] 将数据集里面的none统一改成background, 从/data/ZS/defect_dataset/4_api_request/student/train开始
     - [x] 根据测试结果进行大规模打标
     - [x] 将打标结果进行分析，抽一部分看看效果
-- [ ] 训练脚本
+- [x] 训练脚本
     - [x] train/val/test数据集转化为ms-swift格式的脚本
     - [x] 读取ms-swift格式数据集中的数据，调用模型进行推理，并保存推理结果的脚本
     - [x] 评估脚本，绘制混淆矩阵，计算准确率、召回率、F1
     - [x] 评估下不同模型的效果
-    - [ ] 微调模型的代码
-    - [ ] 合并权重，并评估模型效果的代码
- 
+    - [x] 微调模型的代码
+    - [x] 合并权重，并评估模型效果的代码
+
+- [ ] 级联检测脚本
+    - [ ] 设置数据切分的脚本，保持源数据不变，单独切出来一个未标注的数据
+    - [ ] 恢复多流主干网络
+    - [ ] 在验证集上进行推理yolo得到结果（存储为json格式的bbox即可）
+    - [ ] 取原图像+json里面的bbox，送入VLM进行推理，要添加保存logits的方法
+    - [ ] 将VLM的推理结果保存起来，同时保存logits
+    - [ ] 撰写根据logits计算各项指标的代码

@@ -11,7 +11,7 @@ from swift import get_model_processor, get_template
 from swift.utils import safe_snapshot_download
 from peft import PeftModel
 
-def init_engine(model_path: str, adapter_path: str=None):
+def init_engine(model_path: str, adapter_path: str=None, max_batch_size=max_batch_size):
     """
     初始化模型引擎和配置参数
     建议：配置 max_batch_size (比如4或8) 和 temperature=0
@@ -33,7 +33,7 @@ def init_engine(model_path: str, adapter_path: str=None):
     # 加载推理引擎
     print(f"正在加载底座模型: {model_path} ...")
     print(f"正在挂载 LoRA 权重: {adapter_path} ...")
-    engine = TransformersEngine(model, template=template, max_batch_size=2)
+    engine = TransformersEngine(model, template=template, max_batch_size=max_batch_size)
     request_config = RequestConfig(max_tokens=4096, temperature=0)
     
     return engine, request_config
@@ -79,7 +79,7 @@ def infer_and_save_chunk(engine, request_config, data_chunk: list, output_path: 
         for item in data_chunk:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
 
-def main(input_path, output_path, model_path, adapter_path, chunk_size=2):
+def main(input_path, output_path, model_path, adapter_path, chunk_size=2, max_batch_size=2):
     """
     主控流：
     1. 定义 input_path, output_path, model_path
@@ -116,7 +116,7 @@ def main(input_path, output_path, model_path, adapter_path, chunk_size=2):
         return
         
     # 5. 只有在需要推理时，才消耗时间加载模型 (优化点)
-    engine, request_config = init_engine(model_path, adapter_path)
+    engine, request_config = init_engine(model_path, adapter_path, max_batch_size)
     
     # 6. 开始分块推理
     for i in tqdm(range(0, rest_items, chunk_size), desc='Processing'):
@@ -130,9 +130,16 @@ def main(input_path, output_path, model_path, adapter_path, chunk_size=2):
 
 if __name__ == "__main__":
     input_path = '/data/ZS/defect_dataset/7_swift_dataset/test/012_pos400_neg300_rect300.jsonl'
-    output_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v0-20260307-114111_qwen3_4b_woval_checkpoint_4893.jsonl'
+    output_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v1-20260308-204436_qwen3_4b_wval_checkpoint_4800_best.jsonl'
     model_path = 'Qwen/Qwen3-VL-4B-Instruct'
-    adapter_path = '/data/ZS/defect-vlm/output/weights/v0-20260307-114111_qwen3_4b_woval/checkpoint-4893'
-    chunk_size = 2
-    
-    main(input_path, output_path, model_path, adapter_path, chunk_size)
+    adapter_path = '/data/ZS/defect-vlm/output/weights/v1-20260308-204436_qwen3_4b_wval/checkpoint-4800_best'
+    chunk_size = 16
+    max_batch_size = 16
+    main(
+        input_path = input_path,
+        output_path = output_path,
+        model_path = model_path,
+        adapter_path = adapter_path,
+        chunk_size = chunk_size,            # 一次加载多少条数据，和max_batch_size保持一致即可（或者是整数倍）
+        max_batch_size = max_batch_size     # 一次并行推理多少条数据
+    )
