@@ -2,7 +2,7 @@
 读取ms swift格式的jsonl文件，推理并保存结果。适用于SFT之后的模型，直接输入原始模型+
 """
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 os.environ['MAX_PIXELS'] = '1003520'
 import json
 from tqdm import tqdm
@@ -11,7 +11,7 @@ from swift import get_model_processor, get_template
 from swift.utils import safe_snapshot_download
 from peft import PeftModel
 
-def init_engine(model_path: str, adapter_path: str=None, max_batch_size=max_batch_size):
+def init_engine(model_path: str, adapter_path: str=None, max_batch_size: int=2):
     """
     初始化模型引擎和配置参数
     建议：配置 max_batch_size (比如4或8) 和 temperature=0
@@ -130,9 +130,9 @@ def main(input_path, output_path, model_path, adapter_path, chunk_size=2, max_ba
 
 if __name__ == "__main__":
     input_path = '/data/ZS/defect_dataset/7_swift_dataset/test/012_pos400_neg300_rect300.jsonl'
-    output_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v1-20260308-204436_qwen3_4b_wval_checkpoint_4800_best.jsonl'
     model_path = 'Qwen/Qwen3-VL-4B-Instruct'
-    adapter_path = '/data/ZS/defect-vlm/output/weights/v1-20260308-204436_qwen3_4b_wval/checkpoint-4800_best'
+    output_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v2-20260310-003723_qwen3_4b_LM_PRO.jsonl' # 修改
+    adapter_path = '/data/ZS/defect-vlm/output/weights/v2-20260310-003723_qwen3_4b_LM_PRO/checkpoint-4800_best'     # 修改
     chunk_size = 16
     max_batch_size = 16
     main(
