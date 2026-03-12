@@ -143,6 +143,9 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
         - [x] 沿通道方向拼接图像(/data/ZS/defect_dataset/1_paint_rgb/stripe_phase012/images下面有所有已经拼接好伪rgb图像)
         - [x] 抠出来bbox。读取fusion.json里面的bbox，并将他们从4个不同光源的图像上抠出来，保存为新的图像。同时存储一个json文件。记录下每个样本的id、bbox坐标、先验类别等信息。
         - [x] 画框+拼图（根据上一步保存的json，拼接图像，同时在全局图像上画框。同步保存一个新的json文件，记录下每个样本的id、bbox坐标、先验类别等信息。）
-        - [ ] 构造成为ms swift需要的推理格式（根据前一步保存的json文件和提示词，直接转化为ms swift需要的输入的格式）
-    - [ ] 融入VLM进行推理，将VLM的推理结果保存起来，同时保存logits
+        - [x] 构造成为ms swift需要的推理格式（根据前一步保存的json文件和提示词，直接转化为ms swift需要的输入的格式）
+    - [x] 融入VLM进行推理，将VLM的推理结果保存起来，同时保存logits
     - [ ] 撰写根据logits计算各项指标的代码
+
+
+

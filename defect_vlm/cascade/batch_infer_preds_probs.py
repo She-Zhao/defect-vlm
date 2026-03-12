@@ -1,10 +1,11 @@
 """
-读取ms swift格式的jsonl文件，推理并保存结果。适用于SFT之后的模型
+读取ms swift格式的jsonl文件，推理并保存结果（包含Logprobs）。适用于SFT之后的模型
 输入：原始模型权重+适配器权重输入+待推理数据
-输出：包含推理结果的数据
+输出：包含推理结果的数据（包含Logprobs）
 """
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+import math
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2'
 os.environ['MAX_PIXELS'] = '1003520'
 import json
 from tqdm import tqdm
@@ -12,6 +13,14 @@ from swift.infer_engine import TransformersEngine, RequestConfig, InferRequest
 from swift import get_model_processor, get_template
 from swift.utils import safe_snapshot_download
 from peft import PeftModel
+
+def get_val(obj, key, default=None):
+    """万能安全提取器：兼容 Object 属性和 Dict 键值两种访问模式"""
+    if hasattr(obj, key):
+        return getattr(obj, key)
+    elif isinstance(obj, dict):
+        return obj.get(key, default)
+    return default
 
 def init_engine(model_path: str, adapter_path: str=None, max_batch_size: int=2):
     """
@@ -36,7 +45,12 @@ def init_engine(model_path: str, adapter_path: str=None, max_batch_size: int=2):
     print(f"正在加载底座模型: {model_path} ...")
     print(f"正在挂载 LoRA 权重: {adapter_path} ...")
     engine = TransformersEngine(model, template=template, max_batch_size=max_batch_size)
-    request_config = RequestConfig(max_tokens=4096, temperature=0)
+    request_config = RequestConfig(
+        max_tokens=4096,
+        temperature=0,
+        logprobs=True,       # 开启对数概率输出
+        top_logprobs=5       # 保存排名前 5 的 Token 和概率
+    )
     
     return engine, request_config
 
@@ -72,10 +86,42 @@ def infer_and_save_chunk(engine, request_config, data_chunk: list, output_path: 
     # 推理
     resp_list = engine.infer(infer_requests, request_config)
     
-    # 将处理结果追加到原始数据中
     for i, resp in enumerate(resp_list):
+        # 1. message 是对象，继续用点号访问
         data_chunk[i]['pred'] = resp.choices[0].message.content
     
+        # 2. 提取概率数据
+        token_probs_list = []
+        logprobs_data = resp.choices[0].logprobs
+        
+        # 确保模型返回了 logprobs
+        if logprobs_data is not None:
+            # 【关键修改】：logprobs_data 是字典，必须用 ['content']
+            for token_info in logprobs_data['content']:
+                
+                # token_info 也是字典，必须用 ['token'] 和 ['logprob']
+                t_logprob = token_info['logprob']
+                clean_token_info = {
+                    "token": token_info['token'],
+                    "logprob": t_logprob,
+                    "probability": round(math.exp(t_logprob), 6),
+                    "top_candidates": []
+                }
+                
+                # 遍历它的 top 候选词
+                if 'top_logprobs' in token_info:
+                    for candidate in token_info['top_logprobs']:
+                        c_logprob = candidate['logprob']
+                        clean_token_info["top_candidates"].append({
+                            "token": candidate['token'],
+                            "probability": round(math.exp(c_logprob), 6)
+                        })
+                
+                token_probs_list.append(clean_token_info)
+                
+        # 截取最后20个Token的概率流
+        data_chunk[i]['pred_token_probs'] = token_probs_list[-20:]
+
     # 保存处理结果
     with open(output_path, 'a', encoding='utf-8') as f:
         for item in data_chunk:
@@ -132,26 +178,12 @@ def main(input_path, output_path, model_path, adapter_path, chunk_size=2, max_ba
 
 if __name__ == "__main__":
     # input_path = '/data/ZS/defect_dataset/7_swift_dataset/test/012_pos400_neg300_rect300.jsonl'
-    # model_path = 'Qwen/Qwen3-VL-4B-Instruct'
-    # output_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v2-20260310-003723_qwen3_4b_LM_PRO.jsonl' # 修改
-    # adapter_path = '/data/ZS/defect-vlm/output/weights/v2-20260310-003723_qwen3_4b_LM_PRO/checkpoint-4800_best'     # 修改
-    # chunk_size = 16
-    # max_batch_size = 16
-    # main(
-    #     input_path = input_path,
-    #     output_path = output_path,
-    #     model_path = model_path,
-    #     adapter_path = adapter_path,
-    #     chunk_size = chunk_size,            # 一次加载多少条数据，和max_batch_size保持一致即可（或者是整数倍）
-    #     max_batch_size = max_batch_size     # 一次并行推理多少条数据
-    # )
-
     input_path = '/data/ZS/defect_dataset/12_vlm_message/stripe_phase012/val_0p1.jsonl'
     model_path = 'Qwen/Qwen3-VL-4B-Instruct'
     output_path = '/data/ZS/defect_dataset/13_vlm_response/stripe_phase012/v2_qwen3_4b_LM.jsonl' # 修改
     adapter_path = '/data/ZS/defect-vlm/output/weights/v1-20260308-204436_qwen3_4b_LM/checkpoint-4800_best'     # 修改
-    chunk_size = 1
-    max_batch_size = 1
+    chunk_size = 16
+    max_batch_size = 16
     main(
         input_path = input_path,
         output_path = output_path,
@@ -160,3 +192,4 @@ if __name__ == "__main__":
         chunk_size = chunk_size,            # 一次加载多少条数据，和max_batch_size保持一致即可（或者是整数倍）
         max_batch_size = max_batch_size     # 一次并行推理多少条数据
     )
+

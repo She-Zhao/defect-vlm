@@ -1,39 +1,24 @@
-# debug_json_error.py
-import json
+# 定义精确率 (P) 和召回率 (R) 的列表
+P = [0.8531, 0.8189, 0.8439, 0.8203, 0.8730, 0.8261]
+R = [0.5281, 0.4180, 0.7223, 0.8655, 0.8730, 0.7909]
 
-file_path = '/data/ZS/defect_dataset/8_model_reponse/student/test/qwen3-vl-8b-instrusct.jsonl'
-
-print("=== 检查文件前5行 ===")
-with open(file_path, 'r', encoding='utf-8') as f:
-    lines = f.readlines()
+# 检查两个列表长度是否一致
+if len(P) != len(R):
+    print("错误：P 和 R 的长度不一致！")
+else:
+    print("索引\tP\t\tR\t\tF1")
+    print("-" * 50)
     
-print(f"总行数: {len(lines)}")
-
-for i in range(min(5, len(lines))):
-    line_num = i + 1
-    line = lines[i].strip()
-    print(f"\n--- 第 {line_num} 行 ---")
-    print(f"长度: {len(line)}")
-    print(f"前100字符: {line[:100]}")
-    
-    # 检查整行 JSON
-    try:
-        item = json.loads(line)
-        print("✅ 整行 JSON 解析成功")
+    # 遍历每一对 P 和 R 计算 F1
+    for i in range(len(P)):
+        p_val = P[i]
+        r_val = R[i]
         
-        # 检查 pred 字段
-        if 'pred' in item:
-            pred_content = item['pred']
-            print(f"pred 类型: {type(pred_content)}")
-            print(f"pred 前50字符: {str(pred_content)[:50]}")
-            
-            # 如果是字符串，尝试解析
-            if isinstance(pred_content, str):
-                try:
-                    pred_json = json.loads(pred_content)
-                    print("✅ pred 字段 JSON 解析成功")
-                except json.JSONDecodeError as e:
-                    print(f"❌ pred 字段 JSON 解析失败: {e}")
-                    print(f"问题内容: {pred_content[:200]}")
-    except json.JSONDecodeError as e:
-        print(f"❌ 整行 JSON 解析失败: {e}")
+        # 处理分母为0的情况
+        if p_val + r_val == 0:
+            f1 = 0.0
+        else:
+            f1 = 2 * (p_val * r_val) / (p_val + r_val)
+        
+        # 打印结果（保留4位小数）
+        print(f"{i}\t{p_val:.4f}\t{r_val:.4f}\t{f1:.4f}")
