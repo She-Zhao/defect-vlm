@@ -5,10 +5,10 @@
 输出结果：/data/ZS/defect_dataset/9_yolo_preds/val/col3.json(row3.json)
 此脚本建议在 `/data/ZS/v11_input/run_inference.py` 运行，防止出现ultralytics版本不正确的情况（需要调用修改后的ultralytics）
 """
-
 import sys
 import os
 from pathlib import Path
+import argparse
 
 # =====================================================================
 # 🛡️ 强制环境隔离锁：确保导入的是你魔改后的 ultralytics，而不是系统官方包
@@ -122,18 +122,32 @@ def run_multistream_inference(model_path, input_dir, output_json, conf_thres=0.1
         
     print(f"✅ 推理完成！结果已成功保存至: {output_path}")
 
-if __name__ == '__main__':
-    # ==========================
-    # 在这里配置你的实际路径执行
-    # ==========================
-    
-    # 示例 1：执行 col3 模型的推理
+def main():
+    """利用 argparse 进行命令行传参"""
+    parser = argparse.ArgumentParser(description="多流 YOLO 推理脚本")
+    parser.add_argument('--model_path', type=str, required=True, help='模型权重')
+    parser.add_argument('--input_dir', type=str, required=True, help='待推理数据集所在文件夹')
+    parser.add_argument('--output_json', type=str, required=True, help='输出json路径')
+    parser.add_argument('--conf_thres', type=float, required=True, help='置信度阈值')
+    args = parser.parse_args()
+
     run_multistream_inference(
-        model_path="/data/ZS/v11_input/runs/train/exp2/weights/best.pt",  # 填入你昨晚训练出来的 col3 权重
-        input_dir="/data/ZS/v11_input/datasets/row3",
-        output_json="/data/ZS/defect_dataset/9_yolo_preds/val/row3.json",
-        conf_thres=0.1  # 故意设低一点，让下一步的 NMS 去做决策
+        model_path = args.model_path,       
+        input_dir = args.input_dir,
+        output_json = args.output_json,
+        conf_thres = args.conf_thres            # 设低一点，让下一步的 NMS 去做决策
     )
+    
+if __name__ == '__main__':
+    main()
+    
+    # # 示例 1：执行 col3 模型的推理
+    # run_multistream_inference(
+    #     model_path="/data/ZS/v11_input/runs/train/exp2/weights/best.pt",  # 填入你昨晚训练出来的 col3 权重
+    #     input_dir="/data/ZS/v11_input/datasets/col3",
+    #     output_json="/data/ZS/defect_dataset/9_yolo_preds/val_0p05/col3.json",
+    #     conf_thres=0.05  # 故意设低一点，让下一步的 NMS 去做决策
+    # )
     
     # 示例 2：如果你之后训练出了 row3 模型，只需复制调用：
     # run_multistream_inference(

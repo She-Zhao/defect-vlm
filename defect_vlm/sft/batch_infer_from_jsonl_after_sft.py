@@ -4,7 +4,7 @@
 输出：包含推理结果的数据
 """
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 os.environ['MAX_PIXELS'] = '1003520'
 import json
 from tqdm import tqdm
@@ -145,13 +145,13 @@ if __name__ == "__main__":
     #     chunk_size = chunk_size,            # 一次加载多少条数据，和max_batch_size保持一致即可（或者是整数倍）
     #     max_batch_size = max_batch_size     # 一次并行推理多少条数据
     # )
-
-    input_path = '/data/ZS/defect_dataset/12_vlm_message/stripe_phase012/val_0p1.jsonl'
+    input_path = '/data/ZS/defect_dataset/7_swift_dataset/test/012_pos400_neg300_rect300.jsonl'
+    # input_path = '/data/ZS/defect_dataset/12_vlm_message/stripe_phase012/val_0p1.jsonl'
     model_path = 'Qwen/Qwen3-VL-4B-Instruct'
-    output_path = '/data/ZS/defect_dataset/13_vlm_response/stripe_phase012/v2_qwen3_4b_LM.jsonl' # 修改
-    adapter_path = '/data/ZS/defect-vlm/output/weights/v1-20260308-204436_qwen3_4b_LM/checkpoint-4800_best'     # 修改
-    chunk_size = 1
-    max_batch_size = 1
+    output_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v3_qwen3_4b_LM_PRO_VIT_ckpt3261.jsonl' # 修改
+    adapter_path = '/data/ZS/defect-vlm/output/weights/v3-20260312-165603_qwen3_4b_LM_PRO_VIT/checkpoint-3261'     # 修改
+    chunk_size = 16
+    max_batch_size = 16
     main(
         input_path = input_path,
         output_path = output_path,

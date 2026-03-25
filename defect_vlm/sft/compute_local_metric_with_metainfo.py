@@ -120,7 +120,7 @@ def main(json_path: str, cm_name: str) -> None:
     
     
 if __name__ == "__main__":
-    json_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v2-20260310-003723_qwen3_4b_LM_PRO.jsonl'
+    json_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v3_qwen3_4b_LM_PRO_VIT_ckpt3261.jsonl'
     cm_name = Path(json_path).stem
     
     main(json_path, cm_name)

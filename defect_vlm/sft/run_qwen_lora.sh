@@ -4,9 +4,10 @@
 # 1. 环境变量配置 (Environment Variables)
 # ==============================================================================
 export PYTORCH_CUDA_ALLOC_CONF='expandable_segments:True'
+export MASTER_PORT=29505
 export IMAGE_MAX_TOKEN_NUM=1024
 export NPROC_PER_NODE=3
-export CUDA_VISIBLE_DEVICES=0,1,2
+export CUDA_VISIBLE_DEVICES=1,2,3
 
 # ==============================================================================
 # 2. 数据集路径统一定义 (Dataset Definitions)
@@ -49,8 +50,8 @@ swift sft \
     --target_modules all-linear \
     --lora_rank 64 \
     --lora_alpha 128 \
-    --freeze_vit false \
-    --freeze_aligner false \
+    --freeze_vit true \
+    --freeze_aligner true \
     \
     --num_train_epochs 3 \
     --learning_rate 1e-4 \

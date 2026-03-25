@@ -1,7 +1,7 @@
 """
-将 `11_composite_yolo_preds/stripe_phase012/labels/val_0p1.json` 里面的数据转化为swift推理需要的格式
+将 `/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter0/labels/sp012_0p1.json` 里面的数据转化为swift推理需要的格式
 输入：
-上一步生成的 2x2 拼图 JSON 结果：11_composite_yolo_preds/stripe_phase012/labels
+上一步生成的 2x2 拼图 JSON 结果：/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter0/labels/sp012_0p1.json
 提示词模板文件：/val_0p1.json/data/ZS/defect-vlm/defect_vlm/pe/prompts.json
 
 输出：可以用ms swift直接进行推理的数据 12_vlm_message/stripe_phase012/val_0p1.jsonl
@@ -96,15 +96,15 @@ def main(data_root: Path, input_json: Path, output_jsonl: Path, prompt_json: Pat
     print(f"✅ 转换成功！准备启动 VLM 推理！")
 
 if __name__ == "__main__":
-    # 上一步生成的 2x2 拼图 JSON 结果
-    INPUT_JSON = Path('/data/ZS/defect_dataset/11_composite_yolo_preds/stripe_phase012/labels/val_0p1.json')
-    
     # Prompt 模板所在的 JSON 路径 
     PROMPT_JSON = Path('/data/ZS/defect-vlm/defect_vlm/pe/prompts.json')
     PROMPT_IDX = 1 
+
+    # 上一步生成的 2x2 拼图 JSON 结果
+    INPUT_JSON = Path('/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter0/labels/sp123_0p1.json')
     
     # 最终输出给 MS Swift 推理用的 JSONL 路径
-    OUTPUT_JSONL = Path('/data/ZS/defect_dataset/12_vlm_message/stripe_phase012/val_0p1.jsonl')
+    OUTPUT_JSONL = Path('/data/ZS/flywheel_dataset/5_vlm_message/iter0/sp123_0p1.jsonl')
     
     main(
         data_root=Path('/data/ZS/defect_dataset'), 

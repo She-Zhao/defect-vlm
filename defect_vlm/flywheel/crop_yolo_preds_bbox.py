@@ -68,6 +68,10 @@ def main(fusion_json_path, rgb_image_root, save_img_dir, out_json_path, data_roo
     with open(fusion_json_path, 'r', encoding='utf-8') as f:
         fusion_preds = json.load(f)
 
+    if 'config' in fusion_preds:
+        print(f"决策融合的配置参数:{fusion_preds['config']}")
+        del fusion_preds['config']
+
     metadata_list = []
     global_id = 0
     missing_images = 0
@@ -84,6 +88,7 @@ def main(fusion_json_path, rgb_image_root, save_img_dir, out_json_path, data_roo
             original_img_path = rgb_image_root / light / img_name
             
             if not original_img_path.exists():
+                print(original_img_path)
                 missing_images += 1
                 continue
                 
@@ -148,16 +153,15 @@ def main(fusion_json_path, rgb_image_root, save_img_dir, out_json_path, data_roo
 
 if __name__ == "__main__":
     # 1. 输入：融合后的 JSON 文件和伪 RGB 图像所在目录
-    FUSION_JSON_PATH = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/fusion.json"
-    RGB_IMAGE_ROOT   = "/data/ZS/defect_dataset/1_paint_rgb/stripe_phase012/images"     # 不用动
+    FUSION_JSON_PATH = "/data/ZS/flywheel_dataset/2_yolo_preds/iter0/sp012_decision_fusion_0p1.json"
+    RGB_IMAGE_ROOT   = "/data/ZS/flywheel_dataset/1_paint_rgb/stripe_phase012/images"     # 不用动
     
     # 2. 输出：抠取图像的保存目录和元数据 JSON 的保存路径
-    # 这里其实用stripe_phase123也可以，VLM对012还是123不敏感，但是考虑到YOLO部分用的是012组成的图像训练的，所以还是默认采用012
-    SAVE_IMG_DIR  = "/data/ZS/defect_dataset/10_yolo_preds_bbox/stripe_phase012/images/val_0p1"
-    OUT_JSON_PATH = "/data/ZS/defect_dataset/10_yolo_preds_bbox/stripe_phase012/labels/val_0p1.json"
+    SAVE_IMG_DIR  = "/data/ZS/flywheel_dataset/3_yolo_preds_bbox/iter0/images/sp012_0p1"
+    OUT_JSON_PATH = "/data/ZS/flywheel_dataset/3_yolo_preds_bbox/iter0/labels/sp012_0p1.json"
     
     # 3. 根目录锚点 (仅用于在 JSON 中精简路径，比如变成 '1_paint_rgb/...')
-    DATA_ROOT = "/data/ZS/defect_dataset"
+    DATA_ROOT = "/data/ZS/flywheel_dataset"
 
     main(
         fusion_json_path=FUSION_JSON_PATH,

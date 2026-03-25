@@ -134,7 +134,7 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
     - [x] 微调模型的代码
     - [x] 合并权重，并评估模型效果的代码
 
-- [ ] 级联检测脚本
+- [x] 级联检测脚本
     - [x] 设置数据切分的脚本，保持源数据不变，单独切出来一个未标注的数据
     - [x] 恢复多流主干网络
     - [x] 在验证集上进行推理yolo得到结果（存储为json格式的bbox即可）
@@ -145,7 +145,10 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
         - [x] 画框+拼图（根据上一步保存的json，拼接图像，同时在全局图像上画框。同步保存一个新的json文件，记录下每个样本的id、bbox坐标、先验类别等信息。）
         - [x] 构造成为ms swift需要的推理格式（根据前一步保存的json文件和提示词，直接转化为ms swift需要的输入的格式）
     - [x] 融入VLM进行推理，将VLM的推理结果保存起来，同时保存logits
-    - [ ] 撰写根据logits计算各项指标的代码
+    - [x] 撰写根据logits计算各项指标的代码
 
-
-
+- [ ] 半监督训练
+    - [ ] 用row3和col3对数据进行批量推理，并保存相应的结果到json中
+    - [ ] 对两个json结果进行决策融合
+    - [ ] 让VLM进行判断，得到伪标签数据集
+    - [ ] 修改损失函数，重新训练yolo
