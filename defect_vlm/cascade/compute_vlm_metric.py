@@ -1,9 +1,4 @@
 """
-计算fusion.json经过vlm过滤后的指标
-输入：vlm推理后的jsonl文件 + 原始验证集的数据（coco格式）
-输出：一个文件夹，里面包括一系列指标
-"""
-"""
 计算 VLM (Qwen-VL) 推理结果的各项检测指标
 输入：VLM 的 JSONL 结果 + 中间映射 JSON + 原始 COCO 格式 GT
 输出：PR 曲线、F1 曲线、混淆矩阵等
@@ -15,6 +10,8 @@ import json
 import torch
 import numpy as np
 from pathlib import Path
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # =====================================================================
 # 🛡️ 强制环境隔离锁：确保导入的是你魔改后的 ultralytics
@@ -183,9 +180,40 @@ def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir):
     ap50 = all_ap[:, 0]
     ap = all_ap.mean(1)
 
-    cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=True)
-    cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=False)
+    # cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=True)
+    # cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=False)
     
+    # 1. 提取底层的原始矩阵数据 (通常最后一行/列是 background)
+    matrix = cm.matrix.cpu().numpy() if isinstance(cm.matrix, torch.Tensor) else cm.matrix
+    
+    # 2. 准备标签列表
+    class_names = list(names_dict.values()) + ['background']
+
+    # 3. 按行归一化 (True Class) -> 对角线为 Recall (R)
+    # 加上 1e-15 防止除以 0
+    matrix_r = matrix / (matrix.sum(axis=1, keepdims=True) + 1e-15)
+    
+    # 4. 按列归一化 (Predicted Class) -> 对角线为 Precision (P)
+    matrix_p = matrix / (matrix.sum(axis=0, keepdims=True) + 1e-15)
+
+    # 内部绘图函数
+    def plot_custom_cm(mat, title, save_name):
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(mat, annot=True, fmt=".2f", cmap="Blues", 
+                    xticklabels=class_names, yticklabels=class_names,
+                    vmin=0.0, vmax=1.0)
+        plt.title(title, pad=15)
+        plt.ylabel("True Class")
+        plt.xlabel("Predicted Class")
+        plt.tight_layout()
+        plt.savefig(output_dir / save_name, dpi=300)
+        plt.close()
+
+    # 5. 生成并保存带有 R 和 P 标识的图表
+    print("🎨 正在绘制双向归一化混淆矩阵...")
+    plot_custom_cm(matrix_r, "Confusion Matrix (Row-Normalized / Recall)", "VLM_Confusion_Matrix_R.png")
+    plot_custom_cm(matrix_p, "Confusion Matrix (Col-Normalized / Precision)", "VLM_Confusion_Matrix_P.png")
+        
     print("=" * 60)
     print(f"🏆 评估结果 (VLM Model) 已保存至: {output_dir}")
     print(f"{'Class':>15} {'mAP@50':>10} {'mAP@50-95':>12}")
