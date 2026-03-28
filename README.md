@@ -152,3 +152,13 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
     - [ ] 对两个json结果进行决策融合
     - [ ] 让VLM进行判断，得到伪标签数据集
     - [ ] 修改损失函数，重新训练yolo
+
+
+## yolo推理结果的评估
+YOLO本身画PR曲线里面坑比较多，训练时候绘制出来的PR曲线和我们自己手写推理再绘制PR曲线的结果不一致，所以强烈建议（是必须）采用如下策略，可以获得最为准确得PR值：
+- 绘制单流主干网络的PR曲线，采用 `/data/ZS/defect-vlm/defect_vlm/multi_stream/inference_official.py`，可以得到map@0.5和map@[0.5:0.95]的结果
+- 得到单流主干网络的推理结果后，调用`/data/ZS/defect-vlm/defect_vlm/multi_stream/convert_official_to_custom.py`，将官方的推理结果转化为我们自定义的json格式，然后调用`nms_fusion.py`或者`decision_fusion.py`进行融合，得到融合两个子网络的结果，最后调用`/data/ZS/defect-vlm/defect_vlm/multi_stream/compute_fusion_metric.py`计算融合后的map@0.5和map@0.75和map@[0.5:0.95]的结果
+- 做数据飞轮的时候，看都别看`inference_official.py`，用`/data/ZS/v11_input/inference.py`进行推理，阈值卡一个0.15，得到两个子网络的结果之后再去用`decision_fusion.py`进行融合（可以只用softNMS）。因为这一步要的是“准确”，所以先用0.15阈值过滤一批，再用`decision_fusion.py`里面自带的NMS进行过滤。
+- 说白了就是，只有计算单流网络指标的时候才考虑`inference_official.py`，其他时候都用我们自己写的`inference.py`。
+
+

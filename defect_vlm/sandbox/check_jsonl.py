@@ -71,6 +71,6 @@ def inspect_jsonl(file_path: str, num_samples: int = 3):
 
 if __name__ == "__main__":
     # 这里填入你刚才生成的文件路径
-    target_file = '/data/ZS/defect_dataset/4_api_request/teacher/test/012_pos400_neg300_rect300.jsonl'
+    target_file = '/data/ZS/flywheel_dataset/5_vlm_message/iter0/sp012_0p1.jsonl'
     
     inspect_jsonl(target_file, num_samples=1)

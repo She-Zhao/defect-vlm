@@ -1,5 +1,5 @@
 """
-输入一个jsonl文件，用streamlit进行可视化
+对模型打标的结果进行可视化展示
 """
 import streamlit as st
 import json

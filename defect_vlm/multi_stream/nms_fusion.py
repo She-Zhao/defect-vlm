@@ -87,9 +87,9 @@ def fusion_nms(json_col3, json_row3, output_json, iou_thres=0.45):
 
 if __name__ == '__main__':
     # 配置文件路径
-    COL3_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/col3.json"
-    ROW3_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/row3.json"
-    FUSION_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/nms_fusion1.json"
+    COL3_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_official/col3.json"
+    ROW3_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_official/row3.json"
+    FUSION_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_official/nms_fusion.json"
     
     # 融合的 IoU 阈值 (如果两个同类框的重合度大于 0.45，就剔除置信度低的那个)
     # 可以根据你的缺陷密集程度微调，通常设为 0.45 ~ 0.6

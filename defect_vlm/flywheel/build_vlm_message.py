@@ -101,13 +101,13 @@ if __name__ == "__main__":
     PROMPT_IDX = 1 
 
     # 上一步生成的 2x2 拼图 JSON 结果
-    INPUT_JSON = Path('/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter0/labels/sp123_0p1.json')
+    INPUT_JSON = Path('/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter0/labels/sp012_0p1.json')
     
     # 最终输出给 MS Swift 推理用的 JSONL 路径
-    OUTPUT_JSONL = Path('/data/ZS/flywheel_dataset/5_vlm_message/iter0/sp123_0p1.jsonl')
+    OUTPUT_JSONL = Path('/data/ZS/flywheel_dataset/5_vlm_message/iter0/sp012_0p1.jsonl')
     
     main(
-        data_root=Path('/data/ZS/defect_dataset'), 
+        data_root=Path('/data/ZS/flywheel_dataset'), 
         input_json=INPUT_JSON, 
         output_jsonl=OUTPUT_JSONL, 
         prompt_json=PROMPT_JSON, 

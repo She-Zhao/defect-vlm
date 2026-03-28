@@ -1,7 +1,7 @@
 """
 计算横向和纵向条纹光融合后的结果（fusion.json）的各项指标
 输入：多流主干网络的推理结果 + 原始验证集的数据（coco格式）
-输出：一个文件夹，里面包括一系列指标
+输出：一个文件夹，里面包括一系列指标: map@0.5、map@0.75、map@[0.5:0.9]（图像只有0.5）
 """
 import os
 import sys
@@ -80,6 +80,12 @@ def evaluate_fusion_results(pred_json, gt_json, output_dir):
             )
             # 必须按照置信度降序排列
             detections = detections[detections[:, 4].argsort(descending=True)]
+            
+            # <--- ✨ 新增：极其关键的 Top-K 截断机制，完美对齐官方评测 --->
+            max_det = 300  # YOLO 官方验证默认保留前 300 个高分框
+            if detections.shape[0] > max_det:
+                detections = detections[:max_det]
+
         else:
             detections = torch.empty(0, 6)
 
@@ -120,7 +126,6 @@ def evaluate_fusion_results(pred_json, gt_json, output_dir):
     stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]
     tp, conf, pred_cls, target_cls = stats[0], stats[1], stats[2], stats[3]
 
-
     # 6. 生成所有指标并绘图
     # 新版 YOLO 的 ap_per_class 返回 12 个变量
     tp_arr, fp_arr, p, r, f1, all_ap, ap_class, p_curve, r_curve, f1_curve, x, prec_values = ap_per_class(
@@ -131,27 +136,40 @@ def evaluate_fusion_results(pred_json, gt_json, output_dir):
         prefix="Fusion_"  # 给图表加上前缀，防止和普通评估混淆
     )
     
-    # 提取需要的 mAP@50 和 mAP@50-95 (all_ap 是所有阈值下的准确率，形状为 [nc, 10])
-    ap50 = all_ap[:, 0]
-    ap = all_ap.mean(1)
+    # <--- 核心修改点：提取 mAP@0.5, mAP@0.75, mAP@[0.5:0.95] --->
+    # all_ap 矩阵的形状为 [nc, 10]，代表每个类别在 10 个 IoU 阈值下的 AP
+    ap50 = all_ap[:, 0]       # 索引 0 对应 IoU=0.50
+    ap75 = all_ap[:, 5]       # 索引 5 对应 IoU=0.75
+    ap_mean = all_ap.mean(1)  # 对 10 个阈值求平均，即 mAP@[0.5:0.95]
 
     # 绘制并保存混淆矩阵
     cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=True)
     cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=False)
     
-    # 打印最终指标
-    print("=" * 60)
-    print(f"🏆 评估结果 (Fusion Model) 已保存至: {output_dir}")
-    print(f"{'Class':>15} {'mAP@50':>10} {'mAP@50-95':>12}")
-    print("-" * 60)
-    print(f"{'all':>15} {ap50.mean():>10.4f} {ap.mean():>12.4f}")
+    # 保存所有的指标并打印
+    report_str = "=" * 70 + "\n"
+    report_str += f"🏆 评估结果 (Fusion Model) 已保存至: {output_dir}\n"
+    report_str += f"{'Class':>15} {'mAP@0.5':>10} {'mAP@0.75':>10} {'mAP@[0.5:0.95]':>15}\n"
+    report_str += "-" * 70 + "\n"
+    report_str += f"{'all':>15} {ap50.mean():>10.4f} {ap75.mean():>10.4f} {ap_mean.mean():>15.4f}\n"
+    
     for i, c in enumerate(ap_class):
-        print(f"{names_dict[c]:>15} {ap50[i]:>10.4f} {ap[i]:>12.4f}")
-    print("=" * 60)
+        report_str += f"{names_dict[c]:>15} {ap50[i]:>10.4f} {ap75[i]:>10.4f} {ap_mean[i]:>15.4f}\n"
+    report_str += "=" * 70 + "\n"
+
+    # 1. 打印到控制台
+    print(report_str)
+
+    # 2. 保存到 txt 文件
+    txt_save_path = output_dir / "fusion_metrics_report.txt"
+    with open(txt_save_path, 'w', encoding='utf-8') as f:
+        f.write(report_str)
+    print(f"📄 指标表格已成功导出至: {txt_save_path}")
 
 if __name__ == '__main__':
     GT_JSON = "/data/ZS/defect_dataset/0_defect_dataset_raw/paint_stripe/labels/val.json"
-    PRED_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/nms_fusion1.json"        # 修改
+    # PRED_JSON = "/data/ZS/defect_dataset/9_yolo_preds/自己手写的推理脚本/val_0p1/nms_fusion.json"        # 修改
+    PRED_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_official/decision_fusion.json"        # 修改
     
     # 输出的图片会全部保存在这个文件夹里
     OUTPUT_DIR = "/data/ZS/defect-vlm/output/figures"      # 修改

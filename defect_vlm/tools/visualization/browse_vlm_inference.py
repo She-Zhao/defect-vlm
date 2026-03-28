@@ -1,3 +1,7 @@
+"""
+对本地VLM的推理结果进行可视化展示，也可以展示送给vlm的数据集（尚未生成回复的）
+"""
+
 import streamlit as st
 import json
 import os

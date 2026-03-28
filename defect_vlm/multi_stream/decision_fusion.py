@@ -156,15 +156,15 @@ if __name__ == "__main__":
         'IMG_H': 300.0,             # 图像的高
         'SIGMA_SOFT': 0.05,         # Soft-NMS 的高斯衰减方差
         'SKIP_BOX_THR': 0.15,       # 过滤掉sft-nms降分之后置信度极低的废框          
-        'AREA_TH': 0.0004,          # 尺度感知面积阈值 (th): (6*6像素作为界限)
+        'AREA_TH': 0.0004,          # 尺度感知面积阈值 (th)，以6*6像素为分界线
         'IOU_THR_WBF': 0.45,        # WBF 的聚类 IoU 阈值
         'IOU_THR_SOFT': 0.45,       # Soft-NMS 的重叠阈值
     }
 
     # 配置你的文件路径
-    json_col3 = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/col3.json"
-    json_row3 = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/row3.json"
-    output_json = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/decision_fusion.json"
+    json_col3 = "/data/ZS/defect_dataset/9_yolo_preds/val_official/col3.json"
+    json_row3 = "/data/ZS/defect_dataset/9_yolo_preds/val_official/row3.json"
+    output_json = "/data/ZS/defect_dataset/9_yolo_preds/val_official/decision_fusion.json"
     
     # 执行尺度感知混合融合
     process_scale_aware_fusion(json_col3, json_row3, output_json, config)
