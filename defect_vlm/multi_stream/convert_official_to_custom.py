@@ -88,9 +88,10 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    input_json = '/data/ZS/v11_input/runs/detect/val2/predictions.json'
-    output_json = '/data/ZS/defect_dataset/9_yolo_preds/val_official/col3.json'
-    source = 'col3'
+    input_json = '/data/ZS/v11_input/runs/detect/val10/predictions.json'
+    output_json = '/data/ZS/defect_dataset/9_yolo_preds/val_official/row3_new.json'
+    # output_json = '/data/ZS/flywheel_dataset/10_semi_yolo_preds/iter0/row3.json'
+    source = 'row3'
     conf_thres = 0
     
     convert_and_filter_results(

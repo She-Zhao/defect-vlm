@@ -51,18 +51,18 @@ def inspect_jsonl(file_path: str, num_samples: int = 3):
             print(json.dumps(entry, indent=4, ensure_ascii=False))
             
             # --- 自动检查逻辑 ---
-            human_text = entry['conversation'][0]['value']
-            if "{}" in human_text:
-                print("⚠️  警告: 提示词中仍然包含 '{}'，替换未生效！")
-            else:
-                print("✅ 提示词格式检查通过 (无 '{}' 占位符)")
+            # human_text = entry['conversation'][0]['value']
+            # if "{}" in human_text:
+            #     print("⚠️  警告: 提示词中仍然包含 '{}'，替换未生效！")
+            # else:
+            #     print("✅ 提示词格式检查通过 (无 '{}' 占位符)")
             
-            print(entry['conversation'][0]['value'])
+            # print(entry['conversation'][0]['value'])
             
-            # 检查图片路径
-            img_paths = entry.get('image', [])
-            if not img_paths or not all(isinstance(p, str) for p in img_paths):
-                print("⚠️  警告: 图片路径格式看似不正确")
+            # # 检查图片路径
+            # img_paths = entry.get('image', [])
+            # if not img_paths or not all(isinstance(p, str) for p in img_paths):
+            #     print("⚠️  警告: 图片路径格式看似不正确")
             
             print("-" * 60)
                 
@@ -71,6 +71,6 @@ def inspect_jsonl(file_path: str, num_samples: int = 3):
 
 if __name__ == "__main__":
     # 这里填入你刚才生成的文件路径
-    target_file = '/data/ZS/flywheel_dataset/6_vlm_response/iter0/sp012_0p1_v1_LM.jsonl'
+    target_file = '/data/ZS/defect_dataset/7_swift_dataset/ablation/defect_only/test/val_merged.jsonl'
     
-    inspect_jsonl(target_file, num_samples=1)
+    inspect_jsonl(target_file, num_samples=2)

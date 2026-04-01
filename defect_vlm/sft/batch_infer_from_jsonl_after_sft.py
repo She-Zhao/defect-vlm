@@ -1,10 +1,10 @@
 """
-读取ms swift格式的jsonl文件，推理并保存结果。适用于SFT之后的模型
+读取ms swift格式的jsonl文件，使用transformer推理并保存结果。适用于SFT之后的模型
 输入：原始模型权重+适配器权重输入+待推理数据
 输出：包含推理结果的数据
 """
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,2,3'
 os.environ['MAX_PIXELS'] = '1003520'
 import json
 from tqdm import tqdm
@@ -145,13 +145,14 @@ if __name__ == "__main__":
     #     chunk_size = chunk_size,            # 一次加载多少条数据，和max_batch_size保持一致即可（或者是整数倍）
     #     max_batch_size = max_batch_size     # 一次并行推理多少条数据
     # )
-    input_path = '/data/ZS/defect_dataset/7_swift_dataset/test/012_pos400_neg300_rect300.jsonl'
+    
+    input_path = '/data/ZS/defect_dataset/7_swift_dataset/ablation/defect_only/test/val_merged.jsonl'
     # input_path = '/data/ZS/defect_dataset/12_vlm_message/stripe_phase012/val_0p1.jsonl'
-    model_path = 'Qwen/Qwen3-VL-4B-Instruct'
-    output_path = '/data/ZS/defect_dataset/8_model_reponse/test/after_sft/v3_qwen3_4b_LM_PRO_VIT_ckpt3261.jsonl' # 修改
-    adapter_path = '/data/ZS/defect-vlm/output/weights/v3-20260312-165603_qwen3_4b_LM_PRO_VIT/checkpoint-3261'     # 修改
-    chunk_size = 16
-    max_batch_size = 16
+    model_path = '/data/ZS/model/models/Qwen/Qwen3-VL-4B-Instruct'
+    output_path = '/data/ZS/defect_dataset/8_model_reponse/val_merged/after_sft/v4_qwen3_4b_LM_defect_only_ckpt1200.jsonl' # 修改
+    adapter_path = '/data/ZS/defect-vlm/output/weights/v4-20260329-234354_qwen3_4b_LM_defect_only/checkpoint-1200-best'     # 修改
+    chunk_size = 32
+    max_batch_size = 32
     main(
         input_path = input_path,
         output_path = output_path,

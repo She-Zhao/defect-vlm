@@ -1,11 +1,21 @@
 """
-基于双阈值 (th_l, th_h) 与跨模态一致性，精炼 VLM 伪标签并计算动态 Loss 权重。
-包含实例级置信度折扣 (beta) 与类别级先验权重 (gamma)。
+基于双阈值 (th_l, th_h) ,对vlm的打标结果进行过滤
+同时保存各部分的 Loss 权重: 半监督权重alpha(lambda)、类别级权重gamma_c、实例级权重beta 
 """
 import json
 from pathlib import Path
 
-def generate_refined_pseudo_labels(input_jsonl, output_jsonl, th_l, th_h, eta, class_weights):
+def generate_refined_pseudo_labels(
+    input_jsonl,
+    output_jsonl,
+    th_l,
+    th_h,
+    alpha,
+    eta,
+    class_weights,
+    class_method,
+    class_args
+):
     input_path = Path(input_jsonl)
     output_path = Path(output_jsonl)
     
@@ -62,26 +72,26 @@ def generate_refined_pseudo_labels(input_jsonl, output_jsonl, th_l, th_h, eta, c
                 
             else:
                 # 规则 3：进入 VLM 决策域 (th_l <= p_yolo < th_h)
-                if c_vlm == "background":
+                if c_vlm == "background":                   # 如果VLM判定是背景，直接舍弃
                     stats["vlm_discard_bg"] += 1
                     continue
-                elif c_yolo == c_vlm:
+                elif c_yolo == c_vlm:                       # 如果VLM和YOLO判断结果一致，直接保留
                     final_label = c_yolo
                     beta = p_yolo
                     decision_source = "VLM_Agreed"
                     stats["vlm_agreed"] += 1
-                else:
+                else:                                       # 如果VLM纠正了YOLO，需要给beta乘上一个惩罚系数。
                     final_label = c_vlm
-                    beta = p_yolo * eta
+                    beta = p_yolo * eta         
                     decision_source = "VLM_Corrected"
                     stats["vlm_corrected"] += 1
             # ==============================================
             
             # 获取类别宏观权重 (gamma)，如果字典里没写，容错默认为 1.0
-            gamma = class_weights.get(final_label, 1.0)
+            gamma = class_weights[final_label]
             
             # 计算最终的联合权重
-            final_weight = beta * gamma
+            final_weight = alpha * beta * gamma
             
             # 组装全新的纯净结构
             refined_item = {
@@ -90,8 +100,9 @@ def generate_refined_pseudo_labels(input_jsonl, output_jsonl, th_l, th_h, eta, c
                 "bbox": data["bbox"],
                 "model_source": data["model_source"],  # 保留是为了溯源
                 "final_label": final_label,
-                "beta_weight": round(beta, 4),
-                "gamma_weight": round(gamma, 4),
+                'alpha_weight': round(alpha, 2),
+                "beta_weight": round(beta, 2),
+                "gamma_weight": round(gamma, 2),
                 "final_weight": round(final_weight, 4),
                 "decision_source": decision_source     # 记录这打标是怎么来的，方便分析
             }
@@ -104,7 +115,10 @@ def generate_refined_pseudo_labels(input_jsonl, output_jsonl, th_l, th_h, eta, c
             "th_l": th_l,
             "th_h": th_h,
             "eta": eta,
-            "class_weights": class_weights
+            "alpha": alpha,
+            "class_weights": class_weights,
+            "class_method": class_method,
+            "class_args": class_args 
         },
         "statistics": stats
     }
@@ -136,23 +150,35 @@ def generate_refined_pseudo_labels(input_jsonl, output_jsonl, th_l, th_h, eta, c
 
 if __name__ == '__main__':
     # 1. 路径配置
-    INPUT_FILE = "/data/ZS/flywheel_dataset/7_vlm_extracted_data/iter0/sp012_0p1_v1_LM.jsonl"   # 仅提取了vlm的判断结果，没做任何筛选
-    OUTPUT_FILE = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter0/sp012_0p1_v1_LM_1.jsonl"
+    input_jsonl = "/data/ZS/flywheel_dataset/7_vlm_extracted_data/iter0/sp012_0p1_v1_LM.jsonl"   # 仅提取了vlm的判断结果，没做任何筛选
+    output_jsonl = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter0/sp012_0p1_v1_LM_1.jsonl"
     
     # 2. 超参数配置 (这些需要根据你上一个脚本测出来的值来填)
-    TH_L = 0.1     # R72
-    TH_H = 0.83     # P95
-    ETA = 0.5       # VLM 纠正时的实例权重折扣惩罚系数
+    th_l = 0.1     # R72
+    th_h = 0.83     # P95
+    alpha = 1.0     # 半监督的权重系数 
+    eta = 0.5       # VLM 纠正时的 β 惩罚系数
     
-    # 3. 类别权重配置 (根据长尾分布和 Teacher 的 mAP 设定)
-    # 这里只是给个示范，对于小样本/高精度的类别可以设大一点 (>1.0)，对于大样本/易混淆的设小一点 (<1.0)
-    CLASS_WEIGHTS = {
+    # 3. 类别权重配置 (由 semi/compute_cls_weight.py 得到，对应γ_c)
+    class_weights = {
         "breakage": 0.79,
         "inclusion": 0.64,
         "scratch": 1.09,
-        "ceater": 1.14,
+        "crater": 1.14,
         "run": 1.34,
         "bulge": 1.01
     }
+    class_method = 'power'          # 计算 class_weights 的方法
+    class_args = 2                  # 计算 class_weights 的方法对应的参数
     
-    generate_refined_pseudo_labels(INPUT_FILE, OUTPUT_FILE, TH_L, TH_H, ETA, CLASS_WEIGHTS)
+    generate_refined_pseudo_labels(
+        input_jsonl = input_jsonl,
+        output_jsonl = output_jsonl,
+        th_l = th_l,
+        th_h = th_h,
+        alpha = alpha,
+        eta = eta,
+        class_weights = class_weights,
+        class_method = class_method,
+        class_args = class_args
+    )

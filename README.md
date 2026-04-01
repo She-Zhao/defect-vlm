@@ -147,19 +147,21 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
     - [x] 融入VLM进行推理，将VLM的推理结果保存起来，同时保存logits
     - [x] 撰写根据logits计算各项指标的代码
 
-- [ ] 半监督训练
+- [x] 半监督训练
     - [x] 用row3和col3对数据进行批量推理，并保存相应的结果到json中
     - [x] 对两个json结果进行决策融合
     - [x] 让VLM进行判断
-    - [ ] 对判断的结果进行过滤，修改源码
+    - [x] 对判断的结果进行过滤
         - [x] 在验证集上，只看yolo进行fusion之后的结果，计算出不同阈值下的R，确定th_l以及th_h
         - [x] 提取VLM的判断结果，舍弃掉推理过程、提示词、log_probs，只留下和检测任务相关的信息
-        - [ ] 根据th_l和th_h对VLM的判断结果进行过滤，舍弃掉小于th_l的样本，保留大于th_h的样本，对于介于th_l和th_h之间的样本，以VLM的判断结果为准
-        - [ ] 去看yolo的源码，看下怎么安排数据集的结构来适应源码的修改比较好。
-        - [ ] 添加类别权重和实例级别权重（具体操作方式待定）
+        - [x] 根据th_l和th_h对VLM的判断结果进行过滤，舍弃掉小于th_l的样本，保留大于th_h的样本，对于介于th_l和th_h之间的样本，以VLM的判断结果为准
+        - [x] 去看yolo的源码，看下怎么安排数据集的结构来适应源码的修改比较好。
+        - [x] 添加类别权重和实例级别权重（具体操作方式待定）
+    - [x] 修改损失函数，重新训练yolo
 
-     - [ ] 
-    - [ ] 修改损失函数，重新训练yolo
+- [ ] 数据飞轮
+    - [ ] 修改 `flywheel/batch_infer_preds_probs.py` 推理方式，从transformer改成vllm，参考 `https://github.com/modelscope/ms-swift/blob/main/examples/infer/demo.py`
+    - [ ] 
 
 
 ## yolo推理结果的评估
