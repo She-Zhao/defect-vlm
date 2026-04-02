@@ -192,4 +192,3 @@ if __name__ == "__main__":
         chunk_size = chunk_size,            # 一次加载多少条数据，和max_batch_size保持一致即可（或者是整数倍）
         max_batch_size = max_batch_size     # 一次并行推理多少条数据
     )
-

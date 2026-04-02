@@ -123,8 +123,9 @@ def build_semi_dataset(
 
     # ================= 4. 处理纯净 GT 数据 =================
     print("🖼️ 正在处理并软链接 GT 数据...")
-    gt_img_count = 0
-    
+    gt_train_count = 0
+    gt_val_count = 0
+
     for split in ["train", "val"]:
         for i in range(6):
             folder = f"{split}_{i}" if i > 0 else split
@@ -150,7 +151,12 @@ def build_semi_dataset(
                                 parts = line.strip().split()
                                 if len(parts) >= 5:
                                     fout.write(f"{parts[0]} {parts[1]} {parts[2]} {parts[3]} {parts[4]} 1.0\n")
-                    gt_img_count += 1
+                    
+                    # 区分 train 和 val 计数
+                    if split == "train":
+                        gt_train_count += 1
+                    else:
+                        gt_val_count += 1                    
 
     # ================= 5. 处理伪标签数据 =================
     print("🤖 正在注入 VLM 伪标签数据...")
@@ -191,11 +197,13 @@ def build_semi_dataset(
     print("=" * 50)
     print(f"📁 存放路径: {output_dir}")
     print(f"📊 数据规模统计:")
-    print(f"  ├── 真实标注 (GT) 图像数  : {gt_img_count} 张")
-    print(f"  └── 注入伪标签 (Pseudo) 图像数: {pseudo_img_count} 张")
-    print(f"  └── 融合后训练集+测试集总规模  : {gt_img_count + pseudo_img_count} 张")
+    print(f"  ├── 真实标注 (GT) Train 图像数 : {gt_train_count} 张")
+    print(f"  ├── 真实标注 (GT) Val 图像数   : {gt_val_count} 张")
+    print(f"  ├── 注入伪标签 (Pseudo) 图像数 : {pseudo_img_count} 张 (全量注入 Train)")
+    print(f"  │")
+    print(f"  ├── 🎯 融合后 Train 集实际规模 : {gt_train_count + pseudo_img_count} 张")
+    print(f"  └── 🌐 最终全量数据集总规模    : {gt_train_count + gt_val_count + pseudo_img_count} 张")
     print("=" * 50)
-
 
 if __name__ == '__main__':
     # 类别映射字典
@@ -209,13 +217,13 @@ if __name__ == '__main__':
     }
 
     # 路径配置1，尽量不用sp123(因为baseline是在sp012训练的)
-    MAPPING_JSON = "/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter0/labels/sp012_0p1.json"           # 尽量只用012，因为GT是在sp012上训练的
-    REFINED_JSONL = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter0/wo_vlm/sp012_0p25_wovlm.jsonl"         # 尽量只用012，因为GT是在sp012上训练的
+    MAPPING_JSON = "/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter0/labels/sp012_0p1.json"           # 不用变，只用012，因为GT是在sp012上训练的
+    REFINED_JSONL = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter1/sp012_0p1_v1_LM_chunk1_2.jsonl"         # 只用012，因为GT是在sp012上训练的
 
     # 路径配置2，修改横向还是纵向条纹
     GT_DIR = "/data/ZS/v11_input/datasets/col3"                                         # 这里用的是创建软链接的方式，这个文件夹里面的内容一定不能动！
     UNLABELED_DIR = "/data/ZS/flywheel_dataset/0_multi_input/sp012/col3"                # 这里用的是创建软链接的方式，这个文件夹里面的内容一定不能动！
-    OUTPUT_DIR = "/data/ZS/flywheel_dataset/9_semi_yolo_dataset/iter0_wo_vlm/col3"
+    OUTPUT_DIR = "/data/ZS/flywheel_dataset/9_semi_yolo_dataset/iter1_2/col3"
     
     build_semi_dataset(
         gt_dir=GT_DIR,

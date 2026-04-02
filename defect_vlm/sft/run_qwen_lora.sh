@@ -13,7 +13,7 @@ export CUDA_VISIBLE_DEVICES=2,3
 # 2. 数据集路径统一定义 (Dataset Definitions)
 # ==============================================================================
 # DATA_BASE="/data/ZS/defect_dataset/7_swift_dataset"
-DATA_BASE="/data/ZS/defect_dataset/7_swift_dataset/ablation/cot_defect"
+DATA_BASE="/data/ZS/defect_dataset/7_swift_dataset/ablation/step12_defect"
 
 # 使用 Bash 数组优雅地管理多文件输入，增删极其方便
 TRAIN_FILES=(

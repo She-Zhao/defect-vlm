@@ -150,8 +150,8 @@ def generate_refined_pseudo_labels(
 
 if __name__ == '__main__':
     # 1. 路径配置
-    input_jsonl = "/data/ZS/flywheel_dataset/7_vlm_extracted_data/iter0/sp123_0p1_v1_LM.jsonl"   # 仅提取了vlm的判断结果，没做任何筛选
-    output_jsonl = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter0/wo_beta/sp123_0p1_v1_LM_1_wobeta.jsonl"
+    input_jsonl = "/data/ZS/flywheel_dataset/7_vlm_extracted_data/iter1/sp012_0p1_v1_LM_chunk1.jsonl"   # 仅提取了vlm的判断结果，没做任何筛选
+    output_jsonl = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter1/sp012_0p1_v1_LM_chunk1_2.jsonl"
     
     # 2. 超参数配置 (这些需要根据你上一个脚本测出来的值来填)
     th_l = 0.1     # R72

@@ -1,41 +1,44 @@
 """
-读取ms swift格式的jsonl文件，使用vllm推理并保存结果。适用于SFT之后的模型
-输入：原始模型权重+适配器权重输入+待推理数据
-输出：包含推理结果的数据
+读取 ms swift 格式的 jsonl 文件，使用 vLLM 推理并保存结果。
+特性：取消概率输出，温度固定为0，最大化并发吞吐量。
+输入：离线合并后的全量模型权重 + 待推理数据
+输出：包含推理结果的数据 (pred字段)
 """
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
-os.environ['MAX_PIXELS'] = '1003520'
-TENSOR_PARALLEL_SIZE = 1
 import json
 from tqdm import tqdm
 from typing import List
 
-# 导入必要的 Swift 组件
-from swift import InferRequest, RequestConfig
-from swift.infer_engine import VllmEngine # 改用 VllmEngine
+# 显卡配置
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['MAX_PIXELS'] = '1003520'
+TENSOR_PARALLEL_SIZE = 2  # 对应 4 张卡，开启张量并行
 
-def init_engine(model_path: str, adapter_path: str=None):
+# 导入必要的 Swift 和 vLLM 组件
+from swift import InferRequest, RequestConfig
+from swift.infer_engine import VllmEngine
+
+
+def init_engine(model_path: str):
     """
     初始化 vLLM 模型引擎和配置参数
-    
-    ⚠️ 重要提示：
-    vLLM 不支持在内存中动态融合 PyTorch 模型。如果使用了 LoRA，
-    建议先通过终端命令将模型离线合并，例如：
-    swift export --model_type qwen2-vl-7b-instruct --adapters /path/to/lora --merge_lora true --dest_dir /path/to/merged_model
-    然后将合并后的 `/path/to/merged_model` 直接作为这里的 `model_path`。
     """
     print(f"🚀 正在加载 vLLM 底座模型: {model_path} ...")
-    if adapter_path:
-        print(f"⚠️ 警告: 检测到 adapter_path ({adapter_path})。vLLM 官方建议直接加载离线合并后的全量模型以获得最佳性能。")
+    print(f"⚙️ 当前张量并行度 (Tensor Parallel Size): {TENSOR_PARALLEL_SIZE}")
 
     # 加载推理引擎，max_model_len 可根据你的显存和上下文长度需求调整
-    engine = VllmEngine(model_path, max_model_len=8192, enforce_eager=True, tensor_parallel_size=TENSOR_PARALLEL_SIZE)
+    engine = VllmEngine(
+        model_path, 
+        max_model_len=8192, 
+        enforce_eager=True, 
+        tensor_parallel_size=TENSOR_PARALLEL_SIZE
+    )
     
-    # max_tokens 设为你需要生成的最大长度，temperature=0 保证输出稳定性
+    # max_tokens 设为你需要生成的最大长度，temperature=0 保证输出稳定性，不需要 logprobs
     request_config = RequestConfig(max_tokens=4096, temperature=0)
     
     return engine, request_config
+
 
 def build_requests(data_chunk: list) -> List[InferRequest]:
     """
@@ -53,43 +56,46 @@ def build_requests(data_chunk: list) -> List[InferRequest]:
 
     return infer_requests
 
+
 def infer_and_save_chunk(engine: VllmEngine, request_config: RequestConfig, data_chunk: list, output_path: str):
     """
     1. 调用 build_requests 组装请求
     2. engine.infer() 批量推理
-    3. 将预测结果塞回 data_chunk
+    3. 将预测结果塞回 data_chunk 的 'pred' 字段中
     4. 写入文件
     """
     # 组装请求
     infer_requests = build_requests(data_chunk)
     
-    # vLLM 推理 (这里内部会自动处理并发和 PagedAttention)
+    # vLLM 推理 (内部自动处理并发和 PagedAttention)
     resp_list = engine.infer(infer_requests, request_config)
     
     # 将处理结果追加到原始数据中
     for i, resp in enumerate(resp_list):
-        # 防止因被屏蔽等意外情况导致没生成内容
+        # 确保模型成功返回了结果
         if resp and resp.choices and resp.choices[0].message.content:
             data_chunk[i]['pred'] = resp.choices[0].message.content
         else:
             data_chunk[i]['pred'] = ""
-            print(f"⚠️ 第 {i} 条数据推理返回异常，已置为空字符串。")
+            print(f"⚠️ 警告: 第 {i} 条数据推理返回异常，已置为空字符串。")
     
     # 保存处理结果
     with open(output_path, 'a', encoding='utf-8') as f:
         for item in data_chunk:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
 
-def main(input_path, output_path, model_path, adapter_path=None, chunk_size=32):
+
+def main(input_path, output_path, model_path, chunk_size=64):
     """
-    主控流：vLLM 的吞吐量极大，可以将 chunk_size 设置得大一点（比如 32 或 64），
+    主控流：
+    vLLM 的吞吐量极大，可以将 chunk_size 设置得大一点（比如 64~128），
     既能充分利用 vLLM 的并发批处理优势，又能兼顾断点保存的安全性。
     """
     # 1. 加载所有数据
     with open(input_path, 'r', encoding='utf-8') as f:
         all_data = [json.loads(line) for line in f if line.strip()]
     
-    # 2. 获取已经处理的item的id
+    # 2. 获取已经处理的item的id (断点续传)
     processed_id = set()
     if os.path.exists(output_path):
         with open(output_path, 'r', encoding='utf-8') as f:
@@ -114,7 +120,7 @@ def main(input_path, output_path, model_path, adapter_path=None, chunk_size=32):
         return
         
     # 5. 加载引擎
-    engine, request_config = init_engine(model_path, adapter_path)
+    engine, request_config = init_engine(model_path)
     
     # 6. 开始分块推理
     for i in tqdm(range(0, rest_items, chunk_size), desc='VLLM Inferencing'):
@@ -125,12 +131,24 @@ def main(input_path, output_path, model_path, adapter_path=None, chunk_size=32):
         except Exception as e:
             print(f"❌ 处理索引 [{i}:{i+chunk_size}] 时发生错误: {e}")
 
+
 if __name__ == "__main__":
-    # 使用示例
-    # 注意：为了让 vLLM 跑出满血速度，如果用了 LoRA，请将 model_path 替换为 merge 后的文件夹路径
+    # 1. 输入数据路径
+    INPUT_PATH = '/data/ZS/flywheel_dataset/5_vlm_message/iter2/0p1_chunk12.jsonl'
+    
+    # 2. 输出结果路径
+    OUTPUT_PATH = '/data/ZS/flywheel_dataset/6_vlm_response/iter2/0p1_chunk12_v1_LM.jsonl'
+    
+    # 3. 模型路径
+    # ⚠️ 请确保这里是已经将 Qwen3-VL-4B-Instruct 与 checkpoint-4800_best 合并后的完整权重文件夹
+    MERGED_MODEL_PATH = '/data/ZS/defect-vlm/output/merged_model/v1_qwen3_4b_LM' 
+    
+    # 4. 设置分块大小
+    CHUNK_SIZE = 64  # 根据你的 4x4090 算力，这里开到 64 甚至 128 速度会起飞
+
     main(
-        input_path = '/data/ZS/defect_dataset/7_swift_dataset/test/val_merged.jsonl',
-        output_path = '/data/ZS/defect_dataset/8_model_reponse/val_merged/after_sft/v2_qwen3_4b_LM_PRO.jsonl', # 修改
-        model_path = "/data/ZS/defect-vlm/output/merged_model/v2_qwen3_4b_LM_PRO", # vllm 加载的最佳姿势
-        chunk_size = 64                           # vLLM 并发极强，这个值建议设大（32~128）以减少 IO 频次
+        input_path = INPUT_PATH,
+        output_path = OUTPUT_PATH,
+        model_path = MERGED_MODEL_PATH,
+        chunk_size = CHUNK_SIZE
     )

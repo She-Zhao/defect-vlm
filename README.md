@@ -160,15 +160,24 @@ defect-vlm/defect_vlm/data_preprocess/composite_images_from_gt.py
     - [x] 修改损失函数，重新训练yolo
 
 - [ ] 数据飞轮
-    - [ ] 修改 `flywheel/batch_infer_preds_probs.py` 推理方式，从transformer改成vllm，参考 `https://github.com/modelscope/ms-swift/blob/main/examples/infer/demo.py`
-    - [ ] 
+    - [x] 修改 `flywheel/batch_infer_preds_probs.py` 推理方式，从transformer改成vllm，参考 `https://github.com/modelscope/ms-swift/blob/main/examples/infer/demo.py`
+
+    1. [x]从无标注的数据中抽取chunk1，送入yolo_gt进行检测，得到yolo_preds_bbox
+    2. [x]计算P95和R75，得到th_l和th_h
+    3. [x]过滤th_l，保留th_h，利用VLM处于两个阈值之间的yolo_gt的预测结果进行推理
+    4. [x]提取VLM的判断结果
+    5. [x]根据VLM的判断结果，配合YOLO输出的置信度，分配类别权重gamma和实例权重beta，并设置半监督损失的权重alpha
+    6. [x]进行半监督训练，得到yolo_iter1_temp
+    7. [x]EMA融合yolo_gt和yolo_iter1_temp，得到yolo_iter1
+    8. [ ]yolo_iter1推理chunk1+chunk2，得到yolo_preds_bbox
+    9. [ ]重复2~8，同时更新半监督损失的权重alpha
 
 
 ## yolo推理结果的评估
 YOLO本身画PR曲线里面坑比较多，训练时候绘制出来的PR曲线和我们自己手写推理再绘制PR曲线的结果不一致，所以强烈建议（是必须）采用如下策略，可以获得最为准确得PR值：
 - 绘制单流主干网络的PR曲线，采用 `/data/ZS/defect-vlm/defect_vlm/multi_stream/inference_official.py`，可以得到map@0.5和map@[0.5:0.95]的结果
 - 得到单流主干网络的推理结果后，调用`/data/ZS/defect-vlm/defect_vlm/multi_stream/convert_official_to_custom.py`，将官方的推理结果转化为我们自定义的json格式，然后调用`nms_fusion.py`或者`decision_fusion.py`进行融合，得到融合两个子网络的结果，最后调用`/data/ZS/defect-vlm/defect_vlm/multi_stream/compute_fusion_metric.py`计算融合后的map@0.5和map@0.75和map@[0.5:0.95]的结果
-- 做数据飞轮的时候，看都别看`inference_official.py`，用`/data/ZS/v11_input/inference.py`进行推理，阈值卡一个0.15，得到两个子网络的结果之后再去用`decision_fusion.py`进行融合（可以只用softNMS）。因为这一步要的是“准确”，所以先用0.15阈值过滤一批，再用`decision_fusion.py`里面自带的NMS进行过滤。
-- 说白了就是，只有计算单流网络指标的时候才考虑`inference_official.py`，其他时候都用我们自己写的`inference.py`。
+- 做数据飞轮的时候，推理看都别看`inference_official.py`，用`/data/ZS/v11_input/inference.py`进行推理，阈值卡一个0.1，得到两个子网络的结果之后再去用`decision_fusion.py`进行融合（可以只用softNMS）。因为这一步要的是“准确”，所以先用0.15阈值过滤一批，再用`decision_fusion.py`里面自带的NMS进行过滤。
+- 说白了就是，只有计算网络指标的时候才考虑`inference_official.py`，其他时候都用我们自己写的`inference.py`。
 
 
