@@ -8,11 +8,12 @@ import os
 import json
 from tqdm import tqdm
 from typing import List
+os.environ['MAX_PIXELS'] = '1003520'
 
 # 显卡配置
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
-os.environ['MAX_PIXELS'] = '1003520'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,3'
 TENSOR_PARALLEL_SIZE = 2  # 对应 4 张卡，开启张量并行
+os.environ['TORCH_COMPILE_DISABLE'] = '1'  # 新增：全局强制禁用 Torch Compile
 
 # 导入必要的 Swift 和 vLLM 组件
 from swift import InferRequest, RequestConfig
@@ -91,6 +92,10 @@ def main(input_path, output_path, model_path, chunk_size=64):
     vLLM 的吞吐量极大，可以将 chunk_size 设置得大一点（比如 64~128），
     既能充分利用 vLLM 的并发批处理优势，又能兼顾断点保存的安全性。
     """
+    out_dir = os.path.dirname(output_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+    
     # 1. 加载所有数据
     with open(input_path, 'r', encoding='utf-8') as f:
         all_data = [json.loads(line) for line in f if line.strip()]
@@ -134,10 +139,10 @@ def main(input_path, output_path, model_path, chunk_size=64):
 
 if __name__ == "__main__":
     # 1. 输入数据路径
-    INPUT_PATH = '/data/ZS/flywheel_dataset/5_vlm_message/iter2/0p1_chunk12.jsonl'
+    INPUT_PATH = '/data/ZS/flywheel_dataset/5_vlm_message/iter3_weight_iter1ema/0p1_chunk123.jsonl'
     
     # 2. 输出结果路径
-    OUTPUT_PATH = '/data/ZS/flywheel_dataset/6_vlm_response/iter2/0p1_chunk12_v1_LM.jsonl'
+    OUTPUT_PATH = '/data/ZS/flywheel_dataset/6_vlm_response/iter3_weight_iter1ema/0p1_chunk123_v1_LM.jsonl'
     
     # 3. 模型路径
     # ⚠️ 请确保这里是已经将 Qwen3-VL-4B-Instruct 与 checkpoint-4800_best 合并后的完整权重文件夹

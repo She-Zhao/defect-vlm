@@ -161,9 +161,9 @@ if __name__ == "__main__":
         'IOU_THR_SOFT': 0.45,       # Soft-NMS 的重叠阈值
     }
     
-    json_col3 = "/data/ZS/flywheel_dataset/2_yolo_preds/iter2/col3_0p1_chunk12.json"
-    json_row3 = "/data/ZS/flywheel_dataset/2_yolo_preds/iter2/row3_0p1_chunk12.json"
-    output_json = "/data/ZS/flywheel_dataset/2_yolo_preds/iter2/decision_fusion_0p1_chunk12.json"
+    json_col3 = "/data/ZS/flywheel_dataset/2_yolo_preds/iter3_weight_iter1ema/col3_0p1_chunk123.json"
+    json_row3 = "/data/ZS/flywheel_dataset/2_yolo_preds/iter3_weight_iter1ema/row3_0p1_chunk123.json"
+    output_json = "/data/ZS/flywheel_dataset/2_yolo_preds/iter3_weight_iter1ema/decision_fusion_0p1_chunk123.json"
 
     # 执行尺度感知混合融合
     process_scale_aware_fusion(json_col3, json_row3, output_json, config)

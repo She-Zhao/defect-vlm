@@ -179,7 +179,7 @@ if __name__ == '__main__':
     # 文件路径
     GT_JSON = "/data/ZS/defect_dataset/0_defect_dataset_raw/paint_stripe/labels/val.json"
     # PRED_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val_official/decision_fusion.json"
-    PRED_JSON = "/data/ZS/defect_dataset/9_yolo_preds/自己手写的推理脚本/val_0p1/nms_fusion.json"
+    PRED_JSON = "/data/ZS/flywheel_dataset/10_preds_on_gt_val/iter1/decision_fusion.json"
     OUTPUT_DIR = "/data/ZS/defect-vlm/output"
     
     # ============ 配置你需要查询的目标值 ============

@@ -216,14 +216,16 @@ if __name__ == '__main__':
         "bulge": 5
     }
 
-    # 路径配置1，尽量不用sp123(因为baseline是在sp012训练的)
-    MAPPING_JSON = "/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter0/labels/sp012_0p1.json"           # 不用变，只用012，因为GT是在sp012上训练的
-    REFINED_JSONL = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter1/sp012_0p1_v1_LM_chunk1_2.jsonl"         # 只用012，因为GT是在sp012上训练的
+    # 复制的图像
+    GT_DIR = "/data/ZS/v11_input/datasets/row3"                                         # 这里用的是创建软链接的方式，这个文件夹里面的内容一定不能动！
+    UNLABELED_DIR = "/data/ZS/flywheel_dataset/0_multi_input/sp012/row3"                # 这里用的是创建软链接的方式，这个文件夹里面的内容一定不能动！
+
+    # 路径配置1，不用sp123(因为baseline是在sp012训练的)
+    MAPPING_JSON = "/data/ZS/flywheel_dataset/4_composite_yolo_preds/iter2/labels/0p1_chunk12.json"           # 只用012，因为GT是在sp012上训练的
+    REFINED_JSONL = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter2/0p1_chunk12_v1_LM_3.jsonl"       # 只用012，因为GT是在sp012上训练的
 
     # 路径配置2，修改横向还是纵向条纹
-    GT_DIR = "/data/ZS/v11_input/datasets/col3"                                         # 这里用的是创建软链接的方式，这个文件夹里面的内容一定不能动！
-    UNLABELED_DIR = "/data/ZS/flywheel_dataset/0_multi_input/sp012/col3"                # 这里用的是创建软链接的方式，这个文件夹里面的内容一定不能动！
-    OUTPUT_DIR = "/data/ZS/flywheel_dataset/9_semi_yolo_dataset/iter1_2/col3"
+    OUTPUT_DIR = "/data/ZS/flywheel_dataset/9_semi_yolo_dataset/iter2_3/row3"
     
     build_semi_dataset(
         gt_dir=GT_DIR,

@@ -14,13 +14,13 @@ from ultralytics import YOLO
 
 def generate_official_json():
     # 1. 加载你训练好的权重
-    model = YOLO("/data/ZS/v11_input/weights/flywheel/row3_iter1_ema.pt")
+    model = YOLO("/data/ZS/v11_input/runs/train_semi/col3/weights/best.pt")
     
     # 2. 直接调用 val 方法，开启 save_json
     # 这将 100% 复刻跑出 0.737 时的所有底层逻辑！
     print("🚀 正在使用官方评估逻辑生成高精度预测框...")
     model.val(
-        data="/data/ZS/v11_input/ultralytics/cfg/datasets/paint_flywheel/row3.yaml",
+        data="/data/ZS/v11_input/ultralytics/cfg/datasets/paint_flywheel/col3.yaml",
         conf=0.001,       # 极限阈值保召回
         iou=0.6,          # 官方验证阈值
         max_det=300,     # 防止低分框被截断

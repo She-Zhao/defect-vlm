@@ -1,24 +1,42 @@
-# 定义精确率 (P) 和召回率 (R) 的列表
-P = [0.8531, 0.8189, 0.8439, 0.8203, 0.8730, 0.8261]
-R = [0.5281, 0.4180, 0.7223, 0.8655, 0.8730, 0.7909]
+import os
+import glob
 
-# 检查两个列表长度是否一致
-if len(P) != len(R):
-    print("错误：P 和 R 的长度不一致！")
-else:
-    print("索引\tP\t\tR\t\tF1")
-    print("-" * 50)
+def check_empty_labels(label_dir):
+    print(f"🔍 正在检查目录: {label_dir}")
+    txt_files = glob.glob(os.path.join(label_dir, "*.txt"))
     
-    # 遍历每一对 P 和 R 计算 F1
-    for i in range(len(P)):
-        p_val = P[i]
-        r_val = R[i]
-        
-        # 处理分母为0的情况
-        if p_val + r_val == 0:
-            f1 = 0.0
-        else:
-            f1 = 2 * (p_val * r_val) / (p_val + r_val)
-        
-        # 打印结果（保留4位小数）
-        print(f"{i}\t{p_val:.4f}\t{r_val:.4f}\t{f1:.4f}")
+    if not txt_files:
+        print("❌ 警告：该目录下没有找到任何 .txt 文件！")
+        return
+
+    empty_files = []
+    
+    for f in txt_files:
+        # 读取文件，剥离前后的空格和换行符
+        with open(f, 'r') as file:
+            content = file.read().strip()
+            # 如果剥离空白后什么都没剩下，说明是无效标签
+            if not content:
+                empty_files.append(f)
+
+    print("-" * 50)
+    print(f"📊 检查完毕！共扫描 {len(txt_files)} 个标签文件。")
+    
+    if empty_files:
+        print(f"⚠️ 发现 {len(empty_files)} 个空标签（代表纯背景图）！")
+        print("以下是前 10 个空标签的示例：")
+        for ef in empty_files[:10]:
+            print(f"   - {os.path.basename(ef)}")
+    else:
+        print("✅ 完美！所有标签文件都包含有效的标注数据，没有空文件！")
+
+if __name__ == "__main__":
+    # 你可以把需要检查的目录都加进这个列表里
+    directories_to_check = [
+        "/data/ZS/flywheel_dataset/9_semi_yolo_dataset/iter3_1/col3/train/labels",
+        "/data/ZS/flywheel_dataset/9_semi_yolo_dataset/iter3_1/row3/train/labels"  # 顺手把 row3 也查了
+    ]
+    
+    for d in directories_to_check:
+        check_empty_labels(d)
+        print("\n")

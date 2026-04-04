@@ -150,14 +150,14 @@ def generate_refined_pseudo_labels(
 
 if __name__ == '__main__':
     # 1. 路径配置
-    input_jsonl = "/data/ZS/flywheel_dataset/7_vlm_extracted_data/iter1/sp012_0p1_v1_LM_chunk1.jsonl"   # 仅提取了vlm的判断结果，没做任何筛选
-    output_jsonl = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter1/sp012_0p1_v1_LM_chunk1_2.jsonl"
+    input_jsonl = "/data/ZS/flywheel_dataset/7_vlm_extracted_data/iter2/0p1_chunk12_v1_LM.jsonl"   # 仅提取了vlm的判断结果，没做任何筛选
+    output_jsonl = "/data/ZS/flywheel_dataset/8_pseudo_labels/iter2/0p1_chunk12_v1_LM_3.jsonl"
     
     # 2. 超参数配置 (这些需要根据你上一个脚本测出来的值来填)
     th_l = 0.1     # R72
     th_h = 0.83     # P95
-    alpha = 1.0     # 半监督的权重系数 
     eta = 0.5       # VLM 纠正时的 β 惩罚系数
+    alpha = 1.1     # 半监督的权重系数 
     
     # 3. 类别权重配置 (由 semi/compute_cls_weight.py 得到，对应γ_c)
     class_weights = {

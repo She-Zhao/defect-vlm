@@ -5,6 +5,7 @@
 
 import sys
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 from pathlib import Path
 import argparse
 
@@ -150,11 +151,20 @@ def main():
 if __name__ == '__main__':
     # main()
     
-    # 示例 1：执行 col3 模型的推理
+    # 推理无标注的数据
     run_multistream_inference(
-        model_path="/data/ZS/v11_input/weights/flywheel/col3_iter1_ema.pt",  # 填入你昨晚训练出来的 col3 权重
-        input_dir="/data/ZS/flywheel_dataset/0_multi_input/iter2/col3",
-        output_json="/data/ZS/flywheel_dataset/2_yolo_preds/iter2/sp012_col3_0p1_chunk12.json",
-        conf_thres=0.1            # 故意设低一点，让下一步的 NMS 去做决策
+        model_path="/data/ZS/defect-vlm/output/yolo_weights/iter1_col3_0p1_ema0p01.pt",  # 填入你昨晚训练出来的 col3 权重
+        input_dir="/data/ZS/flywheel_dataset/0_multi_input/iter3/col3",
+        output_json="/data/ZS/flywheel_dataset/2_yolo_preds/iter3_weight_iter1ema/col3_0p1_chunk123.json",
+        conf_thres=0.05            # 故意设低一点，让下一步的 NMS 去做决策
     )
+
+    # 推理 GT 的验证集
+    # run_multistream_inference(
+    #     model_path="/data/ZS/defect-vlm/output/yolo_weights/gt_col3_part_cbam_max.pt",  # 填入你昨晚训练出来的 col3 权重
+    #     input_dir="/data/ZS/v11_input/datasets/col3",
+    #     output_json="/data/ZS/flywheel_dataset/10_preds_on_gt_val/gt/col3.json",
+    #     conf_thres=0.05            # 故意设低一点，让下一步的 NMS 去做决策
+    # )
+
     

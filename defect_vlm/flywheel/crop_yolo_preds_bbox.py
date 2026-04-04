@@ -153,12 +153,12 @@ def main(fusion_json_path, rgb_image_root, save_img_dir, out_json_path, data_roo
 
 if __name__ == "__main__":
     # 1. 输入：融合后的 JSON 文件和伪 RGB 图像所在目录
-    FUSION_JSON_PATH = "/data/ZS/flywheel_dataset/2_yolo_preds/iter2/decision_fusion_0p1_chunk12.json"
+    FUSION_JSON_PATH = "/data/ZS/flywheel_dataset/2_yolo_preds/iter3_weight_iter1ema/decision_fusion_0p1_chunk123.json"
     RGB_IMAGE_ROOT   = "/data/ZS/flywheel_dataset/1_paint_rgb/stripe_phase012/images"     # 不用动
     
     # 2. 输出：抠取图像的保存目录和元数据 JSON 的保存路径
-    SAVE_IMG_DIR  = "/data/ZS/flywheel_dataset/3_yolo_preds_bbox/iter2/images/0p1_chunk12"
-    OUT_JSON_PATH = "/data/ZS/flywheel_dataset/3_yolo_preds_bbox/iter2/labels/0p1_chunk12.json"
+    SAVE_IMG_DIR  = "/data/ZS/flywheel_dataset/3_yolo_preds_bbox/iter3_weight_iter1ema/images/0p1_chunk123"
+    OUT_JSON_PATH = "/data/ZS/flywheel_dataset/3_yolo_preds_bbox/iter3_weight_iter1ema/labels/0p1_chunk123.json"
     
     # 3. 根目录锚点 (仅用于在 JSON 中精简路径，比如变成 '1_paint_rgb/...')
     DATA_ROOT = "/data/ZS/flywheel_dataset"

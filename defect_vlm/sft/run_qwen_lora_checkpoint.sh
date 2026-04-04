@@ -5,13 +5,13 @@
 # ==============================================================================
 export PYTORCH_CUDA_ALLOC_CONF='expandable_segments:True'
 export IMAGE_MAX_TOKEN_NUM=1024
-export NPROC_PER_NODE=3
-export CUDA_VISIBLE_DEVICES=0,1,2
+export NPROC_PER_NODE=2
+export CUDA_VISIBLE_DEVICES=0,1
 
 # ==============================================================================
 # 2. 数据集路径统一定义 (Dataset Definitions)
 # ==============================================================================
-DATA_BASE="/data/ZS/defect_dataset/7_swift_dataset"
+DATA_BASE="/data/ZS/defect_dataset/7_swift_dataset/ablation/step12_defect"
 
 # 使用 Bash 数组优雅地管理多文件输入，增删极其方便
 TRAIN_FILES=(
@@ -33,13 +33,22 @@ VAL_FILES=(
 )
 
 # ==============================================================================
-# 3. 启动 Swift SFT 微调
+# 3. 日志目录与文件配置 (Log Configuration)
+# ==============================================================================
+LOG_DIR="/data/ZS/defect-vlm/output/train_log"
+mkdir -p "$LOG_DIR"  # 如果目录不存在则自动创建
+
+# 生成带时间戳的日志文件名，例如：train_20260329_153022.log
+LOG_FILE="${LOG_DIR}/train_$(date +%Y%m%d_%H%M%S).log"
+
+# ==============================================================================
+# 4. 启动 Swift SFT 微调
 # ==============================================================================
 echo "🚀 开始启动 Qwen3-VL-4B LoRA 微调..."
 
 swift sft \
     --model Qwen/Qwen3-VL-4B-Instruct \
-    --resume_from_checkpoint /data/ZS/defect-vlm/output/weights/v3-20260311-133046/checkpoint-2400 \
+    --resume_from_checkpoint /data/ZS/defect-vlm/output/weights/v6-20260402-003938/checkpoint-3200 \
     --dataset "${TRAIN_FILES[@]}" \
     --val_dataset "${VAL_FILES[@]}" \
     --dataset_num_proc 4 \
@@ -72,4 +81,5 @@ swift sft \
     --save_steps 400 \
     --save_total_limit 3 \
     --logging_steps 5 \
-    --output_dir /data/ZS/defect-vlm/output/weights
+    --output_dir /data/ZS/defect-vlm/output/weights \
+    2>&1 | tee "$LOG_FILE"
