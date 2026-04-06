@@ -75,13 +75,13 @@ def apply_ema_fusion(teacher_ckpt_path, student_ckpt_path, output_ckpt_path, alp
 if __name__ == '__main__':
     # ================= 配置区 =================
     # 1. 上一回合的模型
-    TEACHER_WEIGHT = "/data/ZS/defect-vlm/output/yolo_weights/iter1_row3_0p1_ema0p01.pt" 
+    TEACHER_WEIGHT = "/data/ZS/defect-vlm/output/yolo_weights/iter2_3_col3_0p1_ema0p01.pt" 
     
     # 2. 你刚刚用伪标签训练出来的模型
-    STUDENT_WEIGHT = "/data/ZS/defect-vlm/output/yolo_weights/iter2_row3_0p1.pt"
+    STUDENT_WEIGHT = "/data/ZS/defect-vlm/output/yolo_weights/iter3_9_col3_0p1.pt"
     
     # 3. 融合后的输出路径
-    OUTPUT_WEIGHT = "/data/ZS/defect-vlm/output/yolo_weights/temp/iter2_row3_0p1_ema0p01.pt"
+    OUTPUT_WEIGHT = "/data/ZS/defect-vlm/output/yolo_weights/iter3_9_col3_0p1_ema0p01.pt"
     
     # 4. EMA 动量因子 (关键超参数！)
     ALPHA = 0.01

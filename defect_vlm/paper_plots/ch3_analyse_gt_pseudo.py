@@ -1,3 +1,9 @@
+"""
+统计目录下所有 .txt 文件中各类别缺陷的数量
+labels_dir: 包含 YOLO 标注文件的目录
+class_names: dict, {class_id: class_name}
+"""
+
 import os
 from collections import defaultdict
 
