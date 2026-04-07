@@ -1,3 +1,6 @@
+"""
+分析静态半监督数据集的分布和 GT 之间的数据分布
+"""
 import os
 import pandas as pd
 import numpy as np

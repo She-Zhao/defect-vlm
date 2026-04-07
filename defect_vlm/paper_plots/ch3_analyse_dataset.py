@@ -1,3 +1,6 @@
+"""
+统计人工标注数据集的各项指标
+"""
 import json
 import os
 import random

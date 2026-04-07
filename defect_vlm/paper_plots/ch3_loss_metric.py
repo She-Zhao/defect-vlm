@@ -1,3 +1,6 @@
+"""
+统计第三章的各种loss和指标随着训练epoch的变化情况
+"""
 import pandas as pd
 import matplotlib.pyplot as plt
 import os

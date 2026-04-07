@@ -1,3 +1,7 @@
+"""
+统计数据飞轮三次迭代过程中的 map@50 和 map@50:95 的变化情况
+"""
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
