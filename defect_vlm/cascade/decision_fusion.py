@@ -162,9 +162,9 @@ if __name__ == "__main__":
     }
 
     # 配置你的文件路径
-    json_col3 = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/col3.json"
-    json_row3 = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/row3.json"
-    output_json = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/decision_fusion.json"
+    json_col3 = "/data/ZS/defect_dataset/9_yolo_preds/自己手写的推理脚本/val_0p001/col3.json"
+    json_row3 = "/data/ZS/defect_dataset/9_yolo_preds/自己手写的推理脚本/val_0p001/row3.json"
+    output_json = "/data/ZS/defect_dataset/9_yolo_preds/自己手写的推理脚本/val_0p001/decision_fusion.json"
     
     # 执行尺度感知混合融合
     process_scale_aware_fusion(json_col3, json_row3, output_json, config)

@@ -6,33 +6,35 @@
 export PYTORCH_CUDA_ALLOC_CONF='expandable_segments:True'
 export MASTER_PORT=29505
 export IMAGE_MAX_TOKEN_NUM=1024
-export NPROC_PER_NODE=2
-export CUDA_VISIBLE_DEVICES=2,3
+export NPROC_PER_NODE=4
+export CUDA_VISIBLE_DEVICES=0,1,2,3
 
 # ==============================================================================
 # 2. 数据集路径统一定义 (Dataset Definitions)
 # ==============================================================================
-# DATA_BASE="/data/ZS/defect_dataset/7_swift_dataset"
-DATA_BASE="/data/ZS/defect_dataset/7_swift_dataset/ablation/step12_defect"
+# DATA_BASE="/data/ZS/defect_dataset/7_swift_dataset/ablation/defect_only/val"
+
+TRAIN_FILES=("/data/ZS/defect_dataset/7_swift_dataset/course/stage3_task_alignment_26k_defect_only.jsonl")
+VAL_FILES=("/data/ZS/defect_dataset/7_swift_dataset/course/stage3_task_alignment_6k4_val_defect_only.jsonl")
 
 # 使用 Bash 数组优雅地管理多文件输入，增删极其方便
-TRAIN_FILES=(
-    "${DATA_BASE}/train/stripe_phase012_gt_negative.jsonl"
-    "${DATA_BASE}/train/stripe_phase012_gt_positive.jsonl"
-    "${DATA_BASE}/train/stripe_phase012_gt_rectification.jsonl"
-    "${DATA_BASE}/train/stripe_phase123_gt_negative.jsonl"
-    "${DATA_BASE}/train/stripe_phase123_gt_positive.jsonl"
-    "${DATA_BASE}/train/stripe_phase123_gt_rectification.jsonl"
-)
+# TRAIN_FILES=(
+#     "${DATA_BASE}/train/stripe_phase012_gt_negative.jsonl"
+#     "${DATA_BASE}/train/stripe_phase012_gt_positive.jsonl"
+#     "${DATA_BASE}/train/stripe_phase012_gt_rectification.jsonl"
+#     "${DATA_BASE}/train/stripe_phase123_gt_negative.jsonl"
+#     "${DATA_BASE}/train/stripe_phase123_gt_positive.jsonl"
+#     "${DATA_BASE}/train/stripe_phase123_gt_rectification.jsonl"
+# )
 
-VAL_FILES=(
-    "${DATA_BASE}/val/stripe_phase012_gt_negative.jsonl"
-    "${DATA_BASE}/val/stripe_phase012_gt_positive.jsonl"
-    "${DATA_BASE}/val/stripe_phase012_gt_rectification.jsonl"
-    "${DATA_BASE}/val/stripe_phase123_gt_negative.jsonl"
-    "${DATA_BASE}/val/stripe_phase123_gt_positive.jsonl"
-    "${DATA_BASE}/val/stripe_phase123_gt_rectification.jsonl"
-)
+# VAL_FILES=(
+#     "${DATA_BASE}/val/stripe_phase012_gt_negative.jsonl"
+#     "${DATA_BASE}/val/stripe_phase012_gt_positive.jsonl"
+#     "${DATA_BASE}/val/stripe_phase012_gt_rectification.jsonl"
+#     "${DATA_BASE}/val/stripe_phase123_gt_negative.jsonl"
+#     "${DATA_BASE}/val/stripe_phase123_gt_positive.jsonl"
+#     "${DATA_BASE}/val/stripe_phase123_gt_rectification.jsonl"
+# )
 
 # ==============================================================================
 # 3. 日志目录与文件配置 (Log Configuration)
@@ -49,7 +51,7 @@ LOG_FILE="${LOG_DIR}/train_$(date +%Y%m%d_%H%M%S).log"
 echo "🚀 开始启动 Qwen3-VL-4B LoRA 微调..."
 
 swift sft \
-    --model Qwen/Qwen3-VL-4B-Instruct \
+    --model /data/ZS/defect-vlm/output/merged_model/v8-stage2-LM \
     --dataset "${TRAIN_FILES[@]}" \
     --val_dataset "${VAL_FILES[@]}" \
     --dataset_num_proc 4 \
@@ -60,11 +62,11 @@ swift sft \
     --target_modules all-linear \
     --lora_rank 64 \
     --lora_alpha 128 \
-    --freeze_vit true \
-    --freeze_aligner true \
+    --freeze_vit false \
+    --freeze_aligner false \
     \
-    --num_train_epochs 3 \
-    --learning_rate 1e-4 \
+    --num_train_epochs 2 \
+    --learning_rate 1e-5 \
     --warmup_ratio 0.05 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \

@@ -187,13 +187,13 @@ if __name__ == "__main__":
     DATA_ROOT = "/data/ZS/defect_dataset"
     
     # 上一步抠图脚本生成的 JSON 文件路径
-    INPUT_JSON = "/data/ZS/defect_dataset/10_yolo_preds_bbox/stripe_phase012/labels/val_0p1.json"
+    INPUT_JSON = "/data/ZS/defect_dataset/10_yolo_preds_bbox/stripe_phase012/labels/val_0p01_crop0.json"
     
     # 本次拼接图像的具体存放文件夹
-    OUTPUT_IMAGE_DIR = "/data/ZS/defect_dataset/11_composite_yolo_preds/stripe_phase012/images/val_0p1"
+    OUTPUT_IMAGE_DIR = "/data/ZS/defect_dataset/11_composite_yolo_preds/stripe_phase012/images/val_0p01_crop0"
     
     # 本次生成的终极 JSON 文件的具体路径
-    OUTPUT_JSON_PATH = "/data/ZS/defect_dataset/11_composite_yolo_preds/stripe_phase012/labels/val_0p1.json"
+    OUTPUT_JSON_PATH = "/data/ZS/defect_dataset/11_composite_yolo_preds/stripe_phase012/labels/val_0p01_crop0.json"
 
     process_composite_inference(
         input_json=INPUT_JSON,

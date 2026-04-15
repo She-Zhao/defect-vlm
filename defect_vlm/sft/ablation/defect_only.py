@@ -70,9 +70,9 @@ def process_dataset(input_dir, output_dir, file_names):
 if __name__ == "__main__":
 
     # 原始数据目录和文件名
-    input_dir = "/data/ZS/defect_dataset/7_swift_dataset/test"
+    input_dir = "/data/ZS/defect_dataset/7_swift_dataset_general/test"
     # 建议将消融实验的数据存放在新目录，避免覆盖原始数据
-    output_dir = "/data/ZS/defect_dataset/7_swift_dataset/ablation/defect_only/test"
+    output_dir = "/data/ZS/defect_dataset/7_swift_dataset_general/ablation/defect_only"
     
     # input_dir内待处理的文件
     # file_names = [

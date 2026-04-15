@@ -52,7 +52,7 @@ def plot_ablation_metrics_split(
 
         # 画折线
         ax.plot(x, y_ours, marker='o', markersize=8, markeredgecolor='white', markeredgewidth=1.5,
-                linewidth=2.5, color=COLOR_OURS, label=r'$\mathrm{Ours}$ (完整动态飞轮)')
+                linewidth=2.5, color=COLOR_OURS, label=r'$\mathrm{Ours}$ (完整动态迭代)')
                 
         ax.plot(x, y_no_alp, marker='^', markersize=8, markeredgecolor='white', markeredgewidth=1.5,
                 linewidth=2.5, linestyle='-.', color=COLOR_NO_ALP, label=r'$w/o$ 动态 $\alpha$')
@@ -140,7 +140,7 @@ def plot_ablation_metrics_split(
 
 if __name__ == "__main__":
     # ================== 参数输入区 ==================
-    OUTPUT_DIR = '/data/ZS/defect-vlm/output/figures/数据飞轮'
+    OUTPUT_DIR = '/data/ZS/defect-vlm/output/figures/动态伪标签分析'
     TIMES_FONT_PATH = '/data/ZS/defect-vlm/defect_vlm/paper_plots/fonts/times.ttf'
     ZH_FONT_PATH = '/data/ZS/defect-vlm/defect_vlm/paper_plots/fonts/simsun.ttc' 
 

@@ -14,7 +14,8 @@ def get_dynamic_context_ratio(bbox_size: float) -> float:
     """根据bbox的尺寸动态计算context_ratio (保持与训练集完全对齐)"""
     sizes = [20, 100]
     ratios = [2, 0.5]
-    return float(np.interp(bbox_size, sizes, ratios))
+    # return float(np.interp(bbox_size, sizes, ratios))
+    return 0
 
 def get_region_proposal(image: np.ndarray, bbox: list, bbox_format='xyxy', fixed_context_ratio: float = None) -> np.ndarray:
     """根据bbox截取图像局部"""
@@ -148,13 +149,13 @@ def main(fusion_json_path, rgb_image_root, save_img_dir, out_json_path, data_roo
 
 if __name__ == "__main__":
     # 1. 输入：融合后的 JSON 文件和伪 RGB 图像所在目录
-    FUSION_JSON_PATH = "/data/ZS/defect_dataset/9_yolo_preds/val_0p1/fusion.json"
+    FUSION_JSON_PATH = "/data/ZS/defect_dataset/9_yolo_preds/自己手写的推理脚本/val_0p001/nms_fusion_conf_0p01.json"
     RGB_IMAGE_ROOT   = "/data/ZS/defect_dataset/1_paint_rgb/stripe_phase012/images"     # 不用动
     
     # 2. 输出：抠取图像的保存目录和元数据 JSON 的保存路径
     # 这里其实用stripe_phase123也可以，VLM对012还是123不敏感，但是考虑到YOLO部分用的是012组成的图像训练的，所以还是默认采用012
-    SAVE_IMG_DIR  = "/data/ZS/defect_dataset/10_yolo_preds_bbox/stripe_phase012/images/val_0p1"
-    OUT_JSON_PATH = "/data/ZS/defect_dataset/10_yolo_preds_bbox/stripe_phase012/labels/val_0p1.json"
+    SAVE_IMG_DIR  = "/data/ZS/defect_dataset/10_yolo_preds_bbox/stripe_phase012/images/val_0p01_crop0"
+    OUT_JSON_PATH = "/data/ZS/defect_dataset/10_yolo_preds_bbox/stripe_phase012/labels/val_0p01_crop0.json"
     
     # 3. 根目录锚点 (仅用于在 JSON 中精简路径，比如变成 '1_paint_rgb/...')
     DATA_ROOT = "/data/ZS/defect_dataset"

@@ -1,7 +1,7 @@
 """
 计算 VLM (Qwen-VL) 推理结果的各项检测指标
 输入：VLM 的 JSONL 结果 + 中间映射 JSON + 原始 COCO 格式 GT
-输出：PR 曲线、F1 曲线、混淆矩阵等
+输出：PR 曲线、F1 曲线、混淆矩阵，严格阈值下的全局宏平均 P、R、F1，并同步保存
 """
 import os
 import re
@@ -36,16 +36,7 @@ def parse_vlm_prediction(pred_text):
             return match.group(1).lower()
         return "background"
 
-def extract_probability(token_probs, target_class):
-    """从概率流中倒序提取目标类别的真实概率"""
-    for t_info in reversed(token_probs):
-        token_str = t_info["token"].strip().strip('"').strip("'").lower()
-        # 只要 token 包含类别的核心部分，或者是类别名的一部分
-        if token_str in target_class or target_class in token_str:
-            return t_info["probability"]
-    return 0.5  # 极端情况下的兜底概率
-
-def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir):
+def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir, target_conf=0.2):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -71,7 +62,6 @@ def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir):
     with open(inter_json, 'r', encoding='utf-8') as f:
         inter_data = json.load(f)
         for item in inter_data:
-            # 获取原始图像名称 (去掉路径和光源等前缀/后缀)
             orig_path = item["original_image_paths"][0]
             filename = Path(orig_path).name 
             id2filename[item["id"]] = filename
@@ -91,14 +81,16 @@ def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir):
             filename = id2filename[origin_id]
             pred_cls_name = parse_vlm_prediction(item.get("pred", ""))
             
-            # 如果 VLM 认为是背景 (无缺陷)，我们就不作为正样本推入 detections 中
+            # 如果 VLM 认为是背景 (无缺陷)，抛弃该候选框
             if pred_cls_name == "background" or pred_cls_name not in name2id:
                 continue
                 
             class_id = name2id[pred_cls_name]
-            prob = extract_probability(item.get("pred_token_probs", []), pred_cls_name)
+            # 提取前级置信度
+            prob = item["meta_info"]["confidence"]
             
-            # xywh 转换为 xyxy
+            # 注：这里去掉了硬过滤，把完整的概率流送给底层评估器，才能画出完整的 PR 曲线！
+            
             x, y, w, h = item["meta_info"]["bbox"]
             pred_dict[filename].append({
                 'bbox': [x, y, x + w, y + h],
@@ -108,7 +100,8 @@ def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir):
 
     # 4. 准备 Ultralytics 评估矩阵
     iouv = torch.linspace(0.5, 0.95, 10)
-    cm = ConfusionMatrix(nc=len(names_dict), conf=0.25, iou_thres=0.45)
+    # 【核心：让混淆矩阵内置接收 target_conf】
+    cm = ConfusionMatrix(nc=len(names_dict), conf=target_conf, iou_thres=0.45)
     stats = []
 
     # 5. 逐张图对比计算
@@ -126,7 +119,6 @@ def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir):
                 [[p['bbox'][0], p['bbox'][1], p['bbox'][2], p['bbox'][3], p['confidence'], p['class_id']]
                  for p in preds], dtype=torch.float32
             )
-            # 必须按照置信度降序排列
             detections = detections[detections[:, 4].argsort(descending=True)]
         else:
             detections = torch.empty(0, 6)
@@ -169,34 +161,39 @@ def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir):
         print("⚠️ 警告：VLM 没有输出任何有效的正样本预测，无法生成指标。")
         return
 
-    tp_arr, fp_arr, p, r, f1, all_ap, ap_class, p_curve, r_curve, f1_curve, x, prec_values = ap_per_class(
+    tp_arr, fp_arr, p_max, r_max, f1_max, all_ap, ap_class, p_curve, r_curve, f1_curve, x, prec_values = ap_per_class(
         tp, conf, pred_cls, target_cls, 
         plot=True, 
         save_dir=output_dir, 
         names=names_dict,
-        prefix="VLM_"  # 前缀区分
+        prefix="VLM_"  
     )
     
     ap50 = all_ap[:, 0]
     ap = all_ap.mean(1)
+    
+    # ================== 【核心黑科技：精准查表提取特定阈值的指标】 ==================
+    idx = np.abs(x - target_conf).argmin()
+    actual_conf = x[idx]
+    
+    p_at_conf = p_curve[:, idx]
+    r_at_conf = r_curve[:, idx]
+    f1_at_conf = f1_curve[:, idx]
+    
+    macro_p = p_at_conf.mean()
+    macro_r = r_at_conf.mean()
+    macro_f1 = f1_at_conf.mean()
+    # =================================================================================
 
-    # cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=True)
-    # cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=False)
+    cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=True)
+    cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=False)
     
-    # 1. 提取底层的原始矩阵数据 (通常最后一行/列是 background)
     matrix = cm.matrix.cpu().numpy() if isinstance(cm.matrix, torch.Tensor) else cm.matrix
-    
-    # 2. 准备标签列表
     class_names = list(names_dict.values()) + ['background']
 
-    # 3. 按行归一化 (True Class) -> 对角线为 Recall (R)
-    # 加上 1e-15 防止除以 0
     matrix_r = matrix / (matrix.sum(axis=1, keepdims=True) + 1e-15)
-    
-    # 4. 按列归一化 (Predicted Class) -> 对角线为 Precision (P)
     matrix_p = matrix / (matrix.sum(axis=0, keepdims=True) + 1e-15)
 
-    # 内部绘图函数
     def plot_custom_cm(mat, title, save_name):
         plt.figure(figsize=(10, 8))
         sns.heatmap(mat, annot=True, fmt=".2f", cmap="Blues", 
@@ -209,32 +206,42 @@ def evaluate_vlm_results(vlm_jsonl, inter_json, gt_json, output_dir):
         plt.savefig(output_dir / save_name, dpi=300)
         plt.close()
 
-    # 5. 生成并保存带有 R 和 P 标识的图表
     print("🎨 正在绘制双向归一化混淆矩阵...")
     plot_custom_cm(matrix_r, "Confusion Matrix (Row-Normalized / Recall)", "VLM_Confusion_Matrix_R.png")
     plot_custom_cm(matrix_p, "Confusion Matrix (Col-Normalized / Precision)", "VLM_Confusion_Matrix_P.png")
         
-    print("=" * 60)
-    print(f"🏆 评估结果 (VLM Model) 已保存至: {output_dir}")
-    print(f"{'Class':>15} {'mAP@50':>10} {'mAP@50-95':>12}")
-    print("-" * 60)
-    print(f"{'all':>15} {ap50.mean():>10.4f} {ap.mean():>12.4f}")
+    # ================== 【将结果保存至 metric.txt】 ==================
+    log_lines = []
+    log_lines.append("=" * 75)
+    log_lines.append(f"🏆 评估结果 (VLM Cascade Model) 已保存至: {output_dir}")
+    log_lines.append(f"【严格控制阈值测试】 目标阈值: {target_conf:.4f} (实际查表点: {actual_conf:.4f})")
+    log_lines.append(f"Macro-Precision: {macro_p:.4f}")
+    log_lines.append(f"Macro-Recall:    {macro_r:.4f}")
+    log_lines.append(f"Macro-F1:        {macro_f1:.4f}")
+    log_lines.append("-" * 75)
+    log_lines.append(f"{'Class':>15} {'Prec.':>8} {'Recall':>8} {'F1':>8} {'mAP@50':>10} {'mAP@50-95':>10}")
+    log_lines.append("-" * 75)
+    log_lines.append(f"{'all':>15} {macro_p:>8.4f} {macro_r:>8.4f} {macro_f1:>8.4f} {ap50.mean():>10.4f} {ap.mean():>10.4f}")
     for i, c in enumerate(ap_class):
-        print(f"{names_dict[c]:>15} {ap50[i]:>10.4f} {ap[i]:>12.4f}")
-    print("=" * 60)
+        log_lines.append(f"{names_dict[c]:>15} {p_at_conf[i]:>8.4f} {r_at_conf[i]:>8.4f} {f1_at_conf[i]:>8.4f} {ap50[i]:>10.4f} {ap[i]:>10.4f}")
+    log_lines.append("=" * 75)
+    
+    log_content = "\n".join(log_lines)
+    print(log_content)
+    
+    metric_file = output_dir / f"metric_th{target_conf}.txt"
+    with open(metric_file, "w", encoding="utf-8") as f:
+        f.write(log_content)
+    print(f"📄 日志已成功同步保存至: {metric_file}")
+    # =======================================================================
 
 if __name__ == '__main__':
-    # 1. 真实的标注 JSON (用于提取答案和图片名称)
     GT_JSON = "/data/ZS/defect_dataset/0_defect_dataset_raw/paint_stripe/labels/val.json"
+    INTER_JSON = "/data/ZS/defect_dataset/11_composite_yolo_preds/stripe_phase012/labels/val_0p01.json"
+    VLM_JSONL = "/data/ZS/defect_dataset/13_vlm_response/stripe_phase012/v11_val_0p01.jsonl"
     
-    # 2. 我们拼图那一步生成的中间 JSON (包含了 origin_id 和 original_image_path 的映射关系)
-    INTER_JSON = "/data/ZS/defect_dataset/11_composite_yolo_preds/stripe_phase012/labels/val_0p1.json"
+    # 修改这里的阈值即可，比如你想测 0.2，就写 0.2
+    TARGET_CONF = 0.35
+    OUTPUT_DIR = f"/data/ZS/defect-vlm/output/figures/ch4_cascade/ch4_vlm_th{TARGET_CONF}"
     
-    # 3. VLM 跑出来的最终 JSONL
-    VLM_JSONL = "/data/ZS/defect_dataset/13_vlm_response/stripe_phase012/v2_qwen3_4b_LM.jsonl"
-    
-    # 4. 图表和曲线存放的目录
-    OUTPUT_DIR = "/data/ZS/defect-vlm/output/figures/ch4_cascade/ch4_vlm_0p1"
-    
-    evaluate_vlm_results(VLM_JSONL, INTER_JSON, GT_JSON, OUTPUT_DIR)
-     
+    evaluate_vlm_results(VLM_JSONL, INTER_JSON, GT_JSON, OUTPUT_DIR, target_conf=TARGET_CONF)

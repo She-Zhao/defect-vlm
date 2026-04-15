@@ -139,20 +139,20 @@ def main():
     )
     
 if __name__ == '__main__':
-    main()
+    # main()
     
     # # 示例 1：执行 col3 模型的推理
-    # run_multistream_inference(
-    #     model_path="/data/ZS/v11_input/runs/train/exp2/weights/best.pt",  # 填入你昨晚训练出来的 col3 权重
-    #     input_dir="/data/ZS/v11_input/datasets/col3",
-    #     output_json="/data/ZS/defect_dataset/9_yolo_preds/val_0p05/col3.json",
-    #     conf_thres=0.05  # 故意设低一点，让下一步的 NMS 去做决策
-    # )
+    run_multistream_inference(
+        model_path="/data/ZS/defect-vlm/output/yolo_weights/gt_col3_part_cbam_max.pt",  # 填入你昨晚训练出来的 col3 权重
+        input_dir="/data/ZS/v11_input/datasets/col3",
+        output_json="/data/ZS/defect_dataset/9_yolo_preds/val_0p001/col3.json",
+        conf_thres=0.001  # 故意设低一点，让下一步的 NMS 去做决策
+    )
     
     # 示例 2：如果你之后训练出了 row3 模型，只需复制调用：
-    # run_multistream_inference(
-    #     model_path="/data/ZS/v11_input/runs/train/exp_row3/weights/best.pt",
-    #     input_dir="/data/ZS/v11_input/datasets/row3",
-    #     output_json="/data/ZS/v11_input/predictions/row3_val_preds.json",
-    #     conf_thres=0.1
-    # )
+    run_multistream_inference(
+        model_path="/data/ZS/defect-vlm/output/yolo_weights/gt_row3_part_cbam_max.pt",
+        input_dir="/data/ZS/v11_input/datasets/row3",
+        output_json="/data/ZS/defect_dataset/9_yolo_preds/val_0p001/row3.json",
+        conf_thres=0.001
+    )

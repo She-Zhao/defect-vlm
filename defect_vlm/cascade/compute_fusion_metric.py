@@ -19,7 +19,7 @@ if PROJECT_ROOT not in sys.path:
 # 导入 Ultralytics 的核心评估和绘图工具
 from ultralytics.utils.metrics import ConfusionMatrix, ap_per_class, box_iou
 
-def evaluate_fusion_results(pred_json, gt_json, output_dir):
+def evaluate_fusion_results(pred_json, gt_json, output_dir, cm_conf=0.001):
     """
     计算并绘制融合结果的各项检测指标
     """
@@ -53,7 +53,7 @@ def evaluate_fusion_results(pred_json, gt_json, output_dir):
     iouv = torch.linspace(0.5, 0.95, 10)
     
     # 初始化混淆矩阵 (置信度阈值设为 0.25，这是 YOLO 生成混淆矩阵的标准设定)
-    cm = ConfusionMatrix(nc=len(names_dict), conf=0.25, iou_thres=0.45)
+    cm = ConfusionMatrix(nc=len(names_dict), conf=cm_conf, iou_thres=0.45)
     
     stats = []  # 用于收集所有的 (True_Positives, Confidence, Pred_Class, Target_Class)
 
@@ -132,25 +132,34 @@ def evaluate_fusion_results(pred_json, gt_json, output_dir):
     ap50 = all_ap[:, 0]
     ap = all_ap.mean(1)
 
+    macro_p = p.mean()
+    macro_r = r.mean()
+    macro_f1 = f1.mean()
+    
     # 绘制并保存混淆矩阵
     cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=True)
     cm.plot(save_dir=output_dir, names=tuple(names_dict.values()), normalize=False)
     
     # 打印最终指标
-    print("=" * 60)
-    print(f"🏆 评估结果 (Fusion Model) 已保存至: {output_dir}")
-    print(f"{'Class':>15} {'mAP@50':>10} {'mAP@50-95':>12}")
-    print("-" * 60)
-    print(f"{'all':>15} {ap50.mean():>10.4f} {ap.mean():>12.4f}")
+    print("=" * 70)
+    print(f"🏆 评估结果 已保存至: {output_dir}")
+    print(f"【全局最佳宏平均指标 (At Max F1)】")
+    print(f"Macro-Precision: {macro_p:.4f}")
+    print(f"Macro-Recall:    {macro_r:.4f}")
+    print(f"Macro-F1:        {macro_f1:.4f}")
+    print("-" * 70)
+    print(f"{'Class':>15} {'Prec.':>8} {'Recall':>8} {'F1':>8} {'mAP@50':>10} {'mAP@50-95':>10}")
+    print("-" * 70)
+    print(f"{'all':>15} {macro_p:>8.4f} {macro_r:>8.4f} {macro_f1:>8.4f} {ap50.mean():>10.4f} {ap.mean():>10.4f}")
     for i, c in enumerate(ap_class):
-        print(f"{names_dict[c]:>15} {ap50[i]:>10.4f} {ap[i]:>12.4f}")
-    print("=" * 60)
+        print(f"{names_dict[c]:>15} {p[i]:>8.4f} {r[i]:>8.4f} {f1[i]:>8.4f} {ap50[i]:>10.4f} {ap[i]:>10.4f}")
+    print("=" * 70)
 
 if __name__ == '__main__':
     GT_JSON = "/data/ZS/defect_dataset/0_defect_dataset_raw/paint_stripe/labels/val.json"
-    PRED_JSON = "/data/ZS/defect_dataset/9_yolo_preds/val/row3.json"        # 修改
+    PRED_JSON = "/data/ZS/defect_dataset/9_yolo_preds/自己手写的推理脚本/val_0p001/nms_fusion_conf_0p01.json"        # 修改
     
     # 输出的图片会全部保存在这个文件夹里
-    OUTPUT_DIR = "/data/ZS/defect-vlm/output/figures/检测模型指标/row3"      # 修改
+    OUTPUT_DIR = "/data/ZS/defect-vlm/output/figures/ch4_yolo_0p1"      # 修改
     
-    evaluate_fusion_results(PRED_JSON, GT_JSON, OUTPUT_DIR)
+    evaluate_fusion_results(PRED_JSON, GT_JSON, OUTPUT_DIR, cm_conf=0.1)

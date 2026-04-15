@@ -50,6 +50,9 @@ def inspect_jsonl(file_path: str, num_samples: int = 3):
             print(f"📄 [第 {line_idx + 1} 条数据] (随机抽取第 {i+1} 条):")
             print(json.dumps(entry, indent=4, ensure_ascii=False))
             
+            # ai_response = entry['messages'][1]['content']
+            # print(f'回答:\n{ai_response}\n')
+            
             # --- 自动检查逻辑 ---
             # human_text = entry['conversation'][0]['value']
             # if "{}" in human_text:
@@ -71,6 +74,6 @@ def inspect_jsonl(file_path: str, num_samples: int = 3):
 
 if __name__ == "__main__":
     # 这里填入你刚才生成的文件路径
-    target_file = '/data/ZS/defect_dataset/7_swift_dataset/ablation/defect_only/test/val_merged.jsonl'
+    target_file = '/data/ZS/defect_dataset/7_swift_dataset/course/stage1_vision_only_15k.jsonl'
     
-    inspect_jsonl(target_file, num_samples=2)
+    inspect_jsonl(target_file, num_samples=1)

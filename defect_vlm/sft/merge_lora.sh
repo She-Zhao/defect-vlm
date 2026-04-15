@@ -1,6 +1,6 @@
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 swift export \
-    --model Qwen/Qwen3-VL-4B-Instruct \
-    --adapters /data/ZS/defect-vlm/output/weights/v3-20260312-165603_qwen3_4b_LM_PRO_VIT/checkpoint-3261-best \
-    --output_dir /data/ZS/defect-vlm/output/merged_model/v3_qwen3_4b_LM_PRO_VIT \
+    --model /data/ZS/defect-vlm/output/merged_model/v8-stage2-LM \
+    --adapters /data/ZS/defect-vlm/output/weights/v11-stage3-LM-PRO-VIT-26k/checkpoint-816-best \
+    --output_dir /data/ZS/defect-vlm/output/merged_model/v11-stage3-LM-PRO-VIT-26k \
     --merge_lora true

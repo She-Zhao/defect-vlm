@@ -23,10 +23,15 @@ def main(json_path: str, cm_name: str) -> None:
             item = json.loads(line)
             ai_response_str = item['pred']
             
-            # ################################################################################
             # --- 使用正则鲁棒提取 ---
-            true_label = item['meta_info']['label'].lower()
-        
+            if 'meta-info' in item:
+                true_label = item['meta-info']['label'].lower()
+            elif 'meta_info' in item:
+                true_label = item['meta_info']['label'].lower()
+            else:       # 对course study得到的回复，走这个分支
+                true_label_text = item['messages'][1]['content']
+                true_label = json.loads(true_label_text)['defect']
+
             # 匹配格式如 "defect": "Breakage" 或 "defect":"background"
             match = re.search(r'"defect"\s*:\s*"([^"]+)"', ai_response_str, re.IGNORECASE)
             
@@ -120,7 +125,7 @@ def main(json_path: str, cm_name: str) -> None:
     
     
 if __name__ == "__main__":
-    json_path = '/data/ZS/defect_dataset/8_model_reponse/val_merged/after_sft/v1_qwen3_4b_LM.jsonl'
+    json_path = '/data/ZS/defect_dataset/8_model_reponse/val_merged/v5_qwen3_4b_LM_cot_defect.jsonl'
     cm_name = Path(json_path).stem
     
     main(json_path, cm_name)

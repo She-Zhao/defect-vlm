@@ -62,9 +62,9 @@ def process_dataset_no_cot(input_dir, output_dir, file_names):
 
 if __name__ == "__main__":
     # 原始数据目录
-    input_dir = "/data/ZS/defect_dataset/7_swift_dataset/test"
+    input_dir = "/data/ZS/defect_dataset/7_swift_dataset_general/test"
     # 消融实验（无CoT）数据存放目录
-    output_dir = "/data/ZS/defect_dataset/7_swift_dataset/ablation/step12_defect/test"
+    output_dir = "/data/ZS/defect_dataset/7_swift_dataset_general/ablation/step12_defect"
 
     # file_names = [
     #     "stripe_phase012_gt_negative.jsonl",

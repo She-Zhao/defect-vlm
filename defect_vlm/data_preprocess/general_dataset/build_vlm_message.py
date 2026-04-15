@@ -1,10 +1,6 @@
 """
-将 `11_composite_yolo_preds/stripe_phase012/labels/val_0p1.json` 里面的数据转化为swift推理需要的格式
-输入：
-上一步生成的 2x2 拼图 JSON 结果：11_composite_yolo_preds/stripe_phase012/labels
-提示词模板文件：/val_0p1.json/data/ZS/defect-vlm/defect_vlm/pe/prompts.json
-
-输出：可以用ms swift直接进行推理的数据 12_vlm_message/stripe_phase012/val_0p1.jsonl
+将拼接好的 2x2 图像 JSON 数据转化为 ms-swift 推理/微调需要的格式
+支持透传 GT Label 以及各类难例抖动属性 (IoU, neg_type 等)
 """
 import json
 from pathlib import Path
@@ -42,7 +38,8 @@ def generate_message_entries(
             local_abs_path = (data_root_dir / rel_local_path).as_posix()
             
             origin_id = item['id']
-            message_id = f"sp012_gt_pred_{origin_id}"
+            # 动态生成 message_id，避免写死前缀
+            message_id = f"{dataset_name}_{split_name}_{origin_id}"
             
             prior_label = item['prior_label']
             
@@ -50,6 +47,22 @@ def generate_message_entries(
             # 因为 prompts.json 里已经写了 <image>\n<image>\n
             final_content = prompt_template.replace('{}', prior_label)
             
+            # ================= 动态构建 meta_info =================
+            meta_info = {
+                "bbox": item['bbox'],
+                "prior_label": prior_label,
+                "label": item.get('label', 'unknown'),             # <--- 新增的真实标签
+                "sample_type": item.get('sample_type', 'unknown'), # 样本类型 (positive/negative/rectification)
+                "origin_id": origin_id,
+            }
+            
+            # 动态透传其他所有可能有用的评测字段（如果有的话）
+            optional_keys = ['confidence', 'model_source', 'overlap_iou', 'neg_type', 'jitter_iou']
+            for opt_key in optional_keys:
+                if opt_key in item:
+                    meta_info[opt_key] = item[opt_key]
+            # ======================================================
+
             yield {
                 "id": message_id,
                 "images": [global_abs_path, local_abs_path],
@@ -59,13 +72,7 @@ def generate_message_entries(
                         "content": final_content
                     }
                 ],
-                "meta_info": {
-                    "bbox": item['bbox'],
-                    "prior_label": prior_label,
-                    "confidence": item['confidence'],
-                    "model_source": item['model_source'],
-                    "origin_id": origin_id,
-                }
+                "meta_info": meta_info
             }
         except Exception as e:
             print(f"⚠️ Skipping index {idx} due to error: {e}")
@@ -78,6 +85,8 @@ def main(data_root: Path, input_json: Path, output_jsonl: Path, prompt_json: Pat
     prompt_text = load_prompt_text(prompt_json, prompt_idx)
     
     output_jsonl.parent.mkdir(parents=True, exist_ok=True)
+    
+    # 自动提取项目名称和 split (例如: sp012_gt_negative 和 val)
     dataset_name = input_json.parent.parent.name 
     split_name = input_json.stem                 
 
@@ -93,24 +102,27 @@ def main(data_root: Path, input_json: Path, output_jsonl: Path, prompt_json: Pat
         for entry in tqdm(iterator, total=len(raw_data), desc="构建 VLM Message"):
             f_out.write(json.dumps(entry, ensure_ascii=False) + '\n')
             
-    print(f"✅ 转换成功！准备启动 VLM 推理！")
+    print(f"✅ 转换成功！准备启动 VLM 推理/微调！")
 
 if __name__ == "__main__":
-    # 上一步生成的 2x2 拼图 JSON 结果
-    INPUT_JSON = Path('/data/ZS/defect_dataset/11_composite_yolo_preds/stripe_phase012/labels/val_0p01_crop0.json')
-    
-    # Prompt 模板所在的 JSON 路径 
+    # ================= 配置区 =================
+    # 1. 提示词模板路径
     PROMPT_JSON = Path('/data/ZS/defect-vlm/defect_vlm/pe/prompts.json')
-    PROMPT_IDX = 3
+    PROMPT_IDX = 1 
+
+    # 2. 数据集根目录 (用于拼接出绝对路径)
+    DATA_ROOT = Path('/data/ZS/defect_dataset')
+
+    # 3. 输入：上一步拼接生成的 2x2 拼图 JSON 结果
+    INPUT_JSON = Path('/data/ZS/defect_dataset/3_composite_images_general/sp123_gt_negative/labels/val.json')
     
-    # 最终输出给 MS Swift 推理用的 JSONL 路径
-    OUTPUT_JSONL = Path('/data/ZS/defect_dataset/12_vlm_message/stripe_phase012/val_0p01_crop0.jsonl')
+    # 4. 输出：给 MS Swift 推理/评测用的 JSONL 路径
+    OUTPUT_JSONL = Path('/data/ZS/defect_dataset/7_swift_dataset_general/val/sp123_gt_negative.jsonl')
     
     main(
-        data_root=Path('/data/ZS/defect_dataset'), 
+        data_root=DATA_ROOT, 
         input_json=INPUT_JSON, 
         output_jsonl=OUTPUT_JSONL, 
         prompt_json=PROMPT_JSON, 
         prompt_idx=PROMPT_IDX
     )
-
